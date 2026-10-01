@@ -1,7 +1,14 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { ParseKeys } from 'i18next'
 import type { DecodeError, FoundCode, SourceInfo } from './decode/pipeline'
+import {
+  buttonPrimary as primary,
+  buttonSecondary as secondary,
+  Card,
+  ResetButton,
+  SourceLine,
+} from './ui'
 
 const isMac = /Mac/.test(navigator.userAgent)
 
@@ -14,45 +21,6 @@ const ERROR_KEYS: Record<DecodeError | 'clipboard-empty', ParseKeys> = {
   'decode-failed': 'tools.qrViewer.errors.decodeFailed',
   'pdf-failed': 'tools.qrViewer.errors.pdfFailed',
   'clipboard-empty': 'tools.qrViewer.errors.clipboardEmpty',
-}
-
-const button =
-  'rounded-md px-4 py-2 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600 disabled:opacity-50'
-const primary = `${button} bg-teal-700 text-white hover:bg-teal-800`
-const secondary = `${button} border border-slate-300 bg-white text-slate-800 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800`
-
-function Card({ children, testId }: { children: ReactNode; testId: string }) {
-  return (
-    <div
-      data-testid={testId}
-      className="w-full max-w-2xl rounded-xl border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-800 dark:bg-slate-950"
-    >
-      {children}
-    </div>
-  )
-}
-
-function ResetButton({ onReset }: { onReset: () => void }) {
-  const { t } = useTranslation()
-  return (
-    <button type="button" className={secondary} onClick={onReset}>
-      {t('tools.qrViewer.reset')}
-    </button>
-  )
-}
-
-function SourceLine({ source }: { source: SourceInfo }) {
-  const { t } = useTranslation()
-  return (
-    <div className="mt-6 space-y-1 text-xs text-slate-500">
-      <p>{t('tools.qrViewer.source', { name: source.name })}</p>
-      {source.pageCount !== undefined && source.pageCount > 1 ? (
-        <p data-testid="pdf-page-note">
-          {t('tools.qrViewer.pdfPageNote', { count: source.pageCount })}
-        </p>
-      ) : null}
-    </div>
-  )
 }
 
 export function IdleView({ onOpen, onPaste }: { onOpen: () => void; onPaste: () => void }) {
@@ -187,34 +155,6 @@ export function PickView({
           </li>
         ))}
       </ul>
-      <SourceLine source={source} />
-      <div className="mt-6">
-        <ResetButton onReset={onReset} />
-      </div>
-    </Card>
-  )
-}
-
-export function UrlView({
-  url,
-  source,
-  onReset,
-}: {
-  url: string
-  source: SourceInfo
-  onReset: () => void
-}) {
-  const { t } = useTranslation()
-  return (
-    <Card testId="qr-url">
-      <h2 className="text-lg font-semibold">{t('tools.qrViewer.url.title')}</h2>
-      <p
-        data-testid="decoded-url"
-        className="mt-3 rounded-md bg-slate-100 p-3 font-mono text-sm break-all dark:bg-slate-900"
-      >
-        {url}
-      </p>
-      <p className="mt-3 text-sm text-slate-500">{t('tools.qrViewer.url.pending')}</p>
       <SourceLine source={source} />
       <div className="mt-6">
         <ResetButton onReset={onReset} />

@@ -8,7 +8,7 @@
 │ security.ts   global deny-by-default guards, session perms  │
 │ protocol.ts   serves out/renderer via app://arztool/        │
 │ ipc/          one file per channel group; zod-validated     │
-│ windows/      shell window (viewer window lands in M3)      │
+│ windows/      shell window, viewer window (BaseWindow)      │
 └───────────────▲─────────────────────────────────────────────┘
                 │ ipcRenderer.invoke (channels from shared/ipc)
 ┌───────────────┴──── preload (sandboxed) ────────────────────┐
@@ -65,7 +65,32 @@ decodeInput (renderer/tools/qr-viewer/decode/pipeline.ts)
 DecodeOutcome → views: idle · busy · error · none (tips) · pick (≥2) · url · text
 ```
 
-The URL view is an interim screen; M3 replaces it with the safety confirmation and viewer.
+## URL safety → viewer
+
+`shared/url-safety.ts` is pure and runs twice: in the renderer to build the confirmation card,
+and again in main on `viewer:open` — main never trusts the renderer's verdict.
+
+```
+ConfirmCard ──viewer:open {url}──▶ main: sender must be the shell · assessUrl() · block → refuse
+                                         │
+                                         ▼
+                          BaseWindow ─┬─ WebContentsView: toolbar  (app://…/viewer-toolbar.html,
+                                      │                             preload role "viewer-toolbar")
+                                      └─ WebContentsView: content  (portal; partition "viewer-<uuid>",
+                                                                    in-memory, no preload)
+toolbar ──viewer:command / viewer:get-state──▶ main routes to the viewer that owns the sender
+main ──viewer:state──▶ toolbar (URL, domain, history, zoom, notices)
+```
+
+- **One preload, two roles.** Sandboxed preloads cannot load shared chunks, so `preload/shell.ts`
+  exposes `window.arztool` or `window.arztoolViewer` depending on `--arztool-role=` passed via
+  `additionalArguments`.
+- **Sessions.** Each viewer gets `session.fromPartition('viewer-<uuid>', { cache: false })`. A
+  same-site https popup opens a new viewer on the _same_ partition (login survives); a
+  reference count wipes storage, cache, auth cache and connections when the last window closes.
+- **Downloads** call `dialog.showSaveDialogSync` inside `will-download`; cancel → `item.cancel()`.
+- **Shortcuts** are handled in `before-input-event` on both views, so they work whichever view
+  has focus and never reach the portal's own key handlers.
 
 ## Internationalisation
 

@@ -1,7 +1,12 @@
 import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
-import { _electron as electron, type ElectronApplication } from '@playwright/test'
+import {
+  _electron as electron,
+  expect,
+  type ElectronApplication,
+  type Page,
+} from '@playwright/test'
 
 export const root = resolve(__dirname, '../..')
 
@@ -26,4 +31,11 @@ export async function launchApp(): Promise<{
       rmSync(userData, { recursive: true, force: true })
     },
   }
+}
+
+/** Return the QR tool to its start screen, whatever result is showing. */
+export async function resetToIdle(page: Page): Promise<void> {
+  const reset = page.getByRole('button', { name: /^(Anderes Bild laden|Abbrechen)$/ })
+  if ((await reset.count()) > 0) await reset.first().click()
+  await expect(page.getByTestId('qr-idle')).toBeVisible()
 }

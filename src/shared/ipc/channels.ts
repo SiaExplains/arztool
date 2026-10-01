@@ -9,6 +9,9 @@ export const IpcChannel = {
   ImageConvertHeic: 'image:convert-heic',
   ClipboardReadImage: 'clipboard:read-image',
   ClipboardWriteText: 'clipboard:write-text',
+  ViewerOpen: 'viewer:open',
+  ViewerGetState: 'viewer:get-state',
+  ViewerCommand: 'viewer:command',
 } as const
 
 export type IpcChannel = (typeof IpcChannel)[keyof typeof IpcChannel]
@@ -16,7 +19,12 @@ export type IpcChannel = (typeof IpcChannel)[keyof typeof IpcChannel]
 /** Main → renderer notifications (no response). */
 export const IpcEvent = {
   MenuOpenImage: 'menu:open-image',
+  ViewerState: 'viewer:state',
 } as const
+
+/** Which preload API a window gets; passed via `additionalArguments`. */
+export const PRELOAD_ROLE_ARG = '--arztool-role='
+export type PreloadRole = 'shell' | 'viewer-toolbar'
 
 export type Platform = 'darwin' | 'win32' | 'linux'
 
@@ -45,6 +53,44 @@ export type ConvertHeicResult =
 
 export type ReadClipboardImageResult = { status: 'ok'; file: InputFile } | { status: 'empty' }
 
+export type ViewerOpenResult = { status: 'opened' } | { status: 'blocked' }
+
+export const VIEWER_COMMANDS = [
+  'back',
+  'forward',
+  'reload',
+  'stop',
+  'zoom-in',
+  'zoom-out',
+  'zoom-reset',
+  'toggle-fullscreen',
+  'open-external',
+  'dismiss-notice',
+] as const
+export type ViewerCommand = (typeof VIEWER_COMMANDS)[number]
+
+export type ViewerNotice =
+  | { kind: 'popup-blocked'; host: string }
+  | { kind: 'navigation-blocked'; scheme: string }
+  | { kind: 'load-failed'; description: string }
+  | { kind: 'download-done'; filename: string }
+  | { kind: 'download-failed'; filename: string }
+  | { kind: 'crashed' }
+
+/** Everything the viewer toolbar renders. The URL is display-only. */
+export interface ViewerState {
+  url: string
+  title: string
+  scheme: 'https' | 'http' | 'other'
+  registrableDomain: string | null
+  canGoBack: boolean
+  canGoForward: boolean
+  loading: boolean
+  zoomPercent: number
+  fullscreen: boolean
+  notice: ViewerNotice | null
+}
+
 /** Request and response types per channel. */
 export interface IpcContract {
   [IpcChannel.AppGetInfo]: { request: undefined; response: AppInfo }
@@ -52,6 +98,9 @@ export interface IpcContract {
   [IpcChannel.ImageConvertHeic]: { request: { bytes: Uint8Array }; response: ConvertHeicResult }
   [IpcChannel.ClipboardReadImage]: { request: undefined; response: ReadClipboardImageResult }
   [IpcChannel.ClipboardWriteText]: { request: { text: string }; response: undefined }
+  [IpcChannel.ViewerOpen]: { request: { url: string }; response: ViewerOpenResult }
+  [IpcChannel.ViewerGetState]: { request: undefined; response: ViewerState }
+  [IpcChannel.ViewerCommand]: { request: { command: ViewerCommand }; response: undefined }
 }
 
 /** The API the shell preload exposes on `window.arztool`. */
@@ -71,4 +120,15 @@ export interface ArztoolApi {
     /** Returns an unsubscribe function. */
     onOpenImage(listener: () => void): () => void
   }
+  viewer: {
+    open(url: string): Promise<ViewerOpenResult>
+  }
+}
+
+/** The API the viewer-toolbar preload exposes on `window.arztoolViewer`. */
+export interface ViewerToolbarApi {
+  getState(): Promise<ViewerState>
+  command(command: ViewerCommand): Promise<void>
+  /** Returns an unsubscribe function. */
+  onState(listener: (state: ViewerState) => void): () => void
 }

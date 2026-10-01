@@ -7,16 +7,8 @@ import {
   type FoundCode,
 } from './decode/pipeline'
 import { useInputSources } from './useInputSources'
-import {
-  BusyView,
-  DropOverlay,
-  ErrorView,
-  IdleView,
-  NoneView,
-  PickView,
-  TextView,
-  UrlView,
-} from './views'
+import { BusyView, DropOverlay, ErrorView, IdleView, NoneView, PickView, TextView } from './views'
+import { ConfirmCard } from './ConfirmCard'
 
 type State =
   | { status: 'idle' }
@@ -105,7 +97,7 @@ function Result({
     )
   }
   return picked.payload.kind === 'url' ? (
-    <UrlView url={picked.payload.url} source={outcome.source} onReset={onReset} />
+    <ConfirmCard url={picked.payload.url} source={outcome.source} onCancel={onReset} />
   ) : (
     <TextView text={picked.payload.text} source={outcome.source} onReset={onReset} />
   )

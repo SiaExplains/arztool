@@ -1,6 +1,9 @@
 import { z } from 'zod'
 import { MAX_INPUT_BYTES } from '../qr/input-format'
-import { IpcChannel, type IpcContract } from './channels'
+import { IpcChannel, VIEWER_COMMANDS, type IpcContract } from './channels'
+
+/** Longest URL accepted for the viewer (a QR code holds < 8 KB). */
+export const MAX_URL_LENGTH = 8192
 
 /** Longest text the renderer may put on the clipboard (a QR code holds < 8 KB). */
 export const MAX_CLIPBOARD_TEXT = 16 * 1024
@@ -22,4 +25,7 @@ export const IpcRequestSchemas = {
   [IpcChannel.ClipboardWriteText]: z.strictObject({
     text: z.string().max(MAX_CLIPBOARD_TEXT),
   }),
+  [IpcChannel.ViewerOpen]: z.strictObject({ url: z.string().min(1).max(MAX_URL_LENGTH) }),
+  [IpcChannel.ViewerGetState]: z.undefined(),
+  [IpcChannel.ViewerCommand]: z.strictObject({ command: z.enum(VIEWER_COMMANDS) }),
 } as const satisfies { [C in keyof IpcContract]: z.ZodType<IpcContract[C]['request']> }

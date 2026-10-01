@@ -103,6 +103,32 @@ i18next, zxing-wasm, pdf.js) are bundled by Vite and live in `devDependencies`; 
 main keeps external, is a runtime dependency. Found when pdf.js's optional Node canvas
 (`@napi-rs/canvas`, a native single-arch module) broke the universal macOS build.
 
+## 016 — One preload with roles (2026-10-01, supersedes the open point in 005)
+
+The viewer toolbar needs its own bridge. A second preload entry would make Rollup share a chunk,
+which a sandboxed preload cannot `require`. One bundle exposes `window.arztool` or
+`window.arztoolViewer` based on `--arztool-role=` from `additionalArguments`; main checks the
+sender of every message independently, so the role switch is not the only gate.
+
+## 017 — Popups open a new viewer, not a child window (2026-10-01)
+
+Same-site https popups are denied and reopened in a fresh viewer on the opener's partition. The
+login survives, but `window.opener` is lost. Portals that drive their popup through the opener
+would break; none of the target portals are known to. Electron's `createWindow` hook could keep
+the opener relationship if this turns out to matter.
+
+## 018 — Downloads through `showSaveDialogSync` (2026-10-01)
+
+Electron's built-in save prompt cannot be tested or parented reliably. Calling
+`dialog.showSaveDialogSync(viewerWindow, …)` inside `will-download` gives a sheet on the viewer,
+an explicit cancel path and a stub point for E2E. It blocks main only while the user chooses.
+
+## 019 — External-protocol links are a permission, not a navigation (2026-10-01)
+
+Clicking `mailto:` in Chromium surfaces as `will-navigate` _and_ as an `openExternal`
+permission request. Both are denied; the toolbar says which scheme was blocked. Playwright's
+`click()` waits for the cancelled navigation, so E2E clicks such links from inside the page.
+
 ## Future ideas (out of scope for now)
 
 - Webcam QR scanning.

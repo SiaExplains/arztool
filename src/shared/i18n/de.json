@@ -15,6 +15,9 @@
     "openImage": {
       "title": "QR-Code-Bild öffnen",
       "filter": "Bilder und PDF"
+    },
+    "saveDownload": {
+      "title": "Download speichern"
     }
   },
   "tools": {
@@ -57,18 +60,68 @@
         "title": "{{count}} QR-Codes gefunden",
         "hint": "Bitte den gewünschten Code auswählen."
       },
-      "url": {
-        "title": "Link erkannt",
-        "pending": "Sicherheitsprüfung und Anzeige folgen im nächsten Schritt."
-      },
       "text": {
         "title": "Kein Link – der QR-Code enthält Text",
         "copy": "Text kopieren",
         "copied": "Kopiert"
+      },
+      "confirm": {
+        "titleOk": "Link prüfen",
+        "titleWarn": "Vorsicht – bitte genau prüfen",
+        "titleBlock": "Dieser Link wurde blockiert",
+        "intro": "Prüfen Sie vor dem Öffnen, ob die hervorgehobene Domain zum erwarteten Anbieter gehört.",
+        "domainLabel": "Domain",
+        "urlLabel": "Vollständige Adresse",
+        "badgeHttps": "HTTPS · verschlüsselt",
+        "badgeHttp": "HTTP · unverschlüsselt",
+        "badgeBlocked": "Blockiert",
+        "open": "Im Viewer öffnen",
+        "openAnyway": "Trotzdem öffnen",
+        "cancel": "Abbrechen",
+        "copy": "Link kopieren",
+        "copied": "Kopiert",
+        "opened": "Im Viewer geöffnet.",
+        "blockedByMain": "Der Link wurde aus Sicherheitsgründen nicht geöffnet.",
+        "reasons": {
+          "insecure-http": "Die Verbindung ist nicht verschlüsselt. Patientendaten könnten unterwegs mitgelesen werden.",
+          "credentials": "Vor der Adresse stehen Zugangsdaten. Das wird oft zur Täuschung genutzt – maßgeblich ist nur die hervorgehobene Domain.",
+          "idn": "Die Adresse enthält internationale Schriftzeichen, die bekannten Namen zum Verwechseln ähnlich sein können. Gezeigt wird die technische Schreibweise.",
+          "ip-address": "Der Link führt zu einer IP-Adresse statt zu einem Domainnamen.",
+          "no-public-domain": "Die Adresse gehört zu keiner öffentlichen Domain, z. B. einem internen Netz.",
+          "blocked-scheme": "Links vom Typ „{{scheme}}:“ können Programme oder Skripte starten und werden nie geöffnet.",
+          "invalid-url": "Der Inhalt ist keine gültige Webadresse."
+        }
       }
     }
   },
   "footer": {
     "version": "Version {{version}}"
+  },
+  "viewer": {
+    "windowTitle": "Befund – Arztool"
+  },
+  "viewerToolbar": {
+    "back": "Zurück",
+    "forward": "Vorwärts",
+    "reload": "Neu laden",
+    "stop": "Laden abbrechen",
+    "zoomIn": "Vergrößern",
+    "zoomOut": "Verkleinern",
+    "zoomReset": "Originalgröße",
+    "fullscreen": "Vollbild",
+    "exitFullscreen": "Vollbild beenden",
+    "openExternal": "Im Standardbrowser öffnen",
+    "address": "Adresse (nur lesbar)",
+    "secure": "Verschlüsselte Verbindung",
+    "insecure": "Unverschlüsselte Verbindung",
+    "dismiss": "Hinweis schließen",
+    "notice": {
+      "popupBlocked": "Fenster von {{host}} blockiert",
+      "navigationBlocked": "„{{scheme}}:“-Link blockiert",
+      "loadFailed": "Seite konnte nicht geladen werden: {{description}}",
+      "downloadDone": "„{{filename}}“ gespeichert",
+      "downloadFailed": "„{{filename}}“ konnte nicht gespeichert werden",
+      "crashed": "Die Seite ist abgestürzt – bitte neu laden"
+    }
   }
 }

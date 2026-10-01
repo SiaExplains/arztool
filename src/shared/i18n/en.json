@@ -15,6 +15,9 @@
     "openImage": {
       "title": "Open QR code image",
       "filter": "Images and PDF"
+    },
+    "saveDownload": {
+      "title": "Save download"
     }
   },
   "tools": {
@@ -57,18 +60,68 @@
         "title": "{{count}} QR codes found",
         "hint": "Please choose the code you want."
       },
-      "url": {
-        "title": "Link detected",
-        "pending": "Safety check and viewer follow in the next step."
-      },
       "text": {
         "title": "Not a link – the QR code contains text",
         "copy": "Copy text",
         "copied": "Copied"
+      },
+      "confirm": {
+        "titleOk": "Check the link",
+        "titleWarn": "Careful – please check closely",
+        "titleBlock": "This link was blocked",
+        "intro": "Before opening, check that the highlighted domain belongs to the provider you expect.",
+        "domainLabel": "Domain",
+        "urlLabel": "Full address",
+        "badgeHttps": "HTTPS · encrypted",
+        "badgeHttp": "HTTP · not encrypted",
+        "badgeBlocked": "Blocked",
+        "open": "Open in viewer",
+        "openAnyway": "Open anyway",
+        "cancel": "Cancel",
+        "copy": "Copy link",
+        "copied": "Copied",
+        "opened": "Opened in the viewer.",
+        "blockedByMain": "The link was not opened for security reasons.",
+        "reasons": {
+          "insecure-http": "The connection is not encrypted. Patient data could be read in transit.",
+          "credentials": "There are credentials in front of the address. This is a common trick – only the highlighted domain counts.",
+          "idn": "The address contains international characters that can look like well-known names. The technical spelling is shown.",
+          "ip-address": "The link points to an IP address instead of a domain name.",
+          "no-public-domain": "The address does not belong to a public domain, e.g. an internal network.",
+          "blocked-scheme": "Links of type “{{scheme}}:” can start programs or scripts and are never opened.",
+          "invalid-url": "The content is not a valid web address."
+        }
       }
     }
   },
   "footer": {
     "version": "Version {{version}}"
+  },
+  "viewer": {
+    "windowTitle": "Result – Arztool"
+  },
+  "viewerToolbar": {
+    "back": "Back",
+    "forward": "Forward",
+    "reload": "Reload",
+    "stop": "Stop loading",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "zoomReset": "Actual size",
+    "fullscreen": "Full screen",
+    "exitFullscreen": "Exit full screen",
+    "openExternal": "Open in default browser",
+    "address": "Address (read-only)",
+    "secure": "Encrypted connection",
+    "insecure": "Unencrypted connection",
+    "dismiss": "Dismiss",
+    "notice": {
+      "popupBlocked": "Window from {{host}} blocked",
+      "navigationBlocked": "“{{scheme}}:” link blocked",
+      "loadFailed": "Page could not be loaded: {{description}}",
+      "downloadDone": "“{{filename}}” saved",
+      "downloadFailed": "“{{filename}}” could not be saved",
+      "crashed": "The page crashed – please reload"
+    }
   }
 }
