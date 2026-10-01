@@ -208,6 +208,12 @@ test.describe('file picker', () => {
     await expect(page.getByTestId('decoded-url')).toHaveText(url('https'))
   })
 
+  test('picking a non-image file is refused in main', async () => {
+    await stubOpenDialog(resolve(fixtures, 'manifest.json'))
+    await page.getByRole('button', { name: 'Bild öffnen …' }).click()
+    await expect(page.getByRole('alert')).toHaveText('Dieses Dateiformat wird nicht unterstützt.')
+  })
+
   test('cancelling the dialog changes nothing', async () => {
     await stubOpenDialog(null)
     await app.evaluate(({ Menu }) => {

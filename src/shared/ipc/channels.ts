@@ -32,7 +32,8 @@ export interface InputFile {
   bytes: Uint8Array
 }
 
-export type InputError = 'too-large' | 'read-failed' | 'heic-unsupported' | 'heic-failed'
+export type InputError =
+  'too-large' | 'read-failed' | 'unsupported-format' | 'heic-unsupported' | 'heic-failed'
 
 export type OpenImageResult =
   | { status: 'ok'; file: InputFile }

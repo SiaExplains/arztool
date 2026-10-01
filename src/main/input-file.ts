@@ -19,7 +19,10 @@ export async function readInputFile(path: string): Promise<ReadInputResult> {
 
     const bytes = new Uint8Array(await readFile(path))
     const name = basename(path)
-    if (sniffInputFormat(bytes) !== 'heic') return { status: 'ok', file: { name, bytes } }
+    const format = sniffInputFormat(bytes)
+    // Only image/PDF bytes ever cross to the renderer — not whatever file was picked or copied.
+    if (format === null) return { status: 'error', error: 'unsupported-format' }
+    if (format !== 'heic') return { status: 'ok', file: { name, bytes } }
 
     const converted = await convertHeicToPng(bytes)
     return converted.status === 'ok'

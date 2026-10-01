@@ -4,7 +4,7 @@ import { classifyPayload, type ClassifiedPayload } from '@shared/qr/payload'
 import { cropThumbnail, rasterImage } from './rasterize'
 import { readQrCodes } from './zxing'
 
-export type DecodeError = InputError | 'unsupported-format' | 'decode-failed' | 'pdf-failed'
+export type DecodeError = InputError | 'decode-failed' | 'pdf-failed'
 
 export interface SourceInfo {
   name: string
