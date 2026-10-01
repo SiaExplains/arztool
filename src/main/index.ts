@@ -3,6 +3,7 @@ import { app, BrowserWindow, session } from 'electron'
 import { registerAppIpc } from './ipc/app'
 import { registerClipboardIpc } from './ipc/clipboard'
 import { registerFileIpc } from './ipc/files'
+import { registerViewerIpc } from './ipc/viewer'
 import { installAppMenu } from './menu'
 import { registerAppProtocol, registerAppSchemePrivileges } from './protocol'
 import { hardenSession, installGlobalGuards } from './security'
@@ -36,6 +37,7 @@ if (!app.requestSingleInstanceLock()) {
     registerAppIpc()
     registerFileIpc()
     registerClipboardIpc()
+    registerViewerIpc()
     installAppMenu()
     createShellWindow()
 

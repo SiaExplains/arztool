@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { expect, test, type ElectronApplication, type Page } from '@playwright/test'
-import { launchApp, root } from './launch'
+import { launchApp, resetToIdle, root } from './launch'
 
 const fixtures = resolve(root, 'test/fixtures')
 const manifest = JSON.parse(readFileSync(resolve(fixtures, 'manifest.json'), 'utf8')) as Record<
@@ -36,9 +36,7 @@ test.afterAll(async () => {
  */
 test.beforeEach(async () => {
   consoleProblems = []
-  const reset = page.getByRole('button', { name: 'Anderes Bild laden' })
-  if ((await reset.count()) > 0) await reset.click()
-  await expect(page.getByTestId('qr-idle')).toBeVisible()
+  await resetToIdle(page)
 })
 
 test.afterEach(() => {
@@ -79,7 +77,7 @@ async function pasteViaEditMenu(): Promise<void> {
 test.describe('drag & drop', () => {
   test('single https code shows the decoded link', async () => {
     await dropFixture('single-https.png')
-    await expect(page.getByTestId('decoded-url')).toHaveText(url('https'))
+    await expect(page.getByTestId('confirm-url')).toHaveText(url('https'))
   })
 
   test('two codes: list both, then the picked one', async () => {
@@ -88,7 +86,7 @@ test.describe('drag & drop', () => {
     await expect(list.getByRole('heading')).toHaveText('2 QR-Codes gefunden')
     await expect(list.locator('img')).toHaveCount(2)
     await list.getByRole('button', { name: url('httpsSecond') }).click()
-    await expect(page.getByTestId('decoded-url')).toHaveText(url('httpsSecond'))
+    await expect(page.getByTestId('confirm-url')).toHaveText(url('httpsSecond'))
   })
 
   for (const [file, key] of [
@@ -101,19 +99,19 @@ test.describe('drag & drop', () => {
   ] as const) {
     test(`${file} → link`, async () => {
       await dropFixture(file)
-      await expect(page.getByTestId('decoded-url')).toHaveText(url(key))
+      await expect(page.getByTestId('confirm-url')).toHaveText(url(key))
     })
   }
 
   test('single-page PDF is rendered and decoded', async () => {
     await dropFixture('single-https.pdf')
-    await expect(page.getByTestId('decoded-url')).toHaveText(url('https'))
+    await expect(page.getByTestId('confirm-url')).toHaveText(url('https'))
     await expect(page.getByTestId('pdf-page-note')).toHaveCount(0)
   })
 
   test('format is sniffed from bytes, not the file name', async () => {
     await dropFixture('single-https.png', 'befund.jpg')
-    await expect(page.getByTestId('decoded-url')).toHaveText(url('https'))
+    await expect(page.getByTestId('confirm-url')).toHaveText(url('https'))
   })
 
   test('non-URL payload shows text with a working copy button', async () => {
@@ -142,7 +140,7 @@ test.describe('drag & drop', () => {
   test('HEIC is converted and decoded (macOS)', async () => {
     test.skip(process.platform !== 'darwin', 'HEIC is macOS-only')
     await dropFixture('single-https.heic')
-    await expect(page.getByTestId('decoded-url')).toHaveText(url('https'))
+    await expect(page.getByTestId('confirm-url')).toHaveText(url('https'))
   })
 
   test('HEIC shows a convert hint (Windows)', async () => {
@@ -161,7 +159,7 @@ test.describe('paste', () => {
     }, png.toString('base64'))
 
     await pasteViaEditMenu()
-    await expect(page.getByTestId('decoded-url')).toHaveText(url('http'))
+    await expect(page.getByTestId('confirm-url')).toHaveText(url('http'))
   })
 
   test('"From clipboard" button reads the same image via main', async () => {
@@ -172,7 +170,7 @@ test.describe('paste', () => {
     }, png.toString('base64'))
 
     await page.getByRole('button', { name: 'Aus Zwischenablage' }).click()
-    await expect(page.getByTestId('decoded-url')).toHaveText(url('https'))
+    await expect(page.getByTestId('confirm-url')).toHaveText(url('https'))
   })
 
   test('paste with text only on the clipboard → "no image" message', async () => {
@@ -188,7 +186,7 @@ test.describe('file picker', () => {
   test('"Open image…" button decodes the chosen file', async () => {
     await stubOpenDialog(resolve(fixtures, 'single-https.png'))
     await page.getByRole('button', { name: 'Bild öffnen …' }).click()
-    await expect(page.getByTestId('decoded-url')).toHaveText(url('https'))
+    await expect(page.getByTestId('confirm-url')).toHaveText(url('https'))
   })
 
   test('File → Open image (Cmd/Ctrl+O) uses the same flow', async () => {
@@ -205,7 +203,7 @@ test.describe('file picker', () => {
     await app.evaluate(({ Menu }) => {
       Menu.getApplicationMenu()?.getMenuItemById('open-image')?.click()
     })
-    await expect(page.getByTestId('decoded-url')).toHaveText(url('https'))
+    await expect(page.getByTestId('confirm-url')).toHaveText(url('https'))
   })
 
   test('picking a non-image file is refused in main', async () => {
@@ -230,9 +228,9 @@ test('decoding makes no network requests', async () => {
     if (!req.url().startsWith('app://') && !req.url().startsWith('data:')) requests.push(req.url())
   })
   await dropFixture('single-https.pdf')
-  await expect(page.getByTestId('decoded-url')).toHaveText(url('https'))
-  await page.getByRole('button', { name: 'Anderes Bild laden' }).click()
+  await expect(page.getByTestId('confirm-url')).toHaveText(url('https'))
+  await resetToIdle(page)
   await dropFixture('single-https.heic')
-  await expect(page.getByTestId('qr-url').or(page.getByTestId('qr-error'))).toBeVisible()
+  await expect(page.getByTestId('qr-confirm').or(page.getByTestId('qr-error'))).toBeVisible()
   expect(requests).toEqual([])
 })

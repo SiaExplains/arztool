@@ -52,7 +52,12 @@ export default defineElectronConfig({
     plugins: [react(), tailwindcss(), cspPlugin()],
     build: {
       minify: true,
-      rollupOptions: { input: { index: resolve(__dirname, 'src/renderer/index.html') } },
+      rollupOptions: {
+        input: {
+          index: resolve(__dirname, 'src/renderer/index.html'),
+          'viewer-toolbar': resolve(__dirname, 'src/renderer/viewer-toolbar.html'),
+        },
+      },
     },
   }),
 })
