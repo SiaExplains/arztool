@@ -1,0 +1,19 @@
+{
+  "app": {
+    "name": "Arztool",
+    "tagline": "Das digitale Werkzeug für Ärzte"
+  },
+  "nav": {
+    "tools": "Werkzeuge"
+  },
+  "tools": {
+    "qrViewer": {
+      "title": "QR-Befund öffnen",
+      "description": "QR-Code eines Patienten laden und den Befund groß anzeigen.",
+      "comingSoon": "Diese Funktion wird gerade gebaut."
+    }
+  },
+  "footer": {
+    "version": "Version {{version}}"
+  }
+}
