@@ -5,7 +5,7 @@
 The first tool opens a patient's imaging result (CT, MRI, X-ray) from the QR code on their
 printout or screenshot in a large, clean viewer window, instead of on a phone screen.
 
-> Status: early development (M3 — URL safety and viewer). See [CHANGELOG.md](CHANGELOG.md).
+> Status: early development (M4 — settings, DE/EN, About). See [CHANGELOG.md](CHANGELOG.md).
 
 ## Requirements
 

@@ -4,12 +4,17 @@
     "tagline": "Das digitale Werkzeug für Ärzte"
   },
   "nav": {
-    "tools": "Werkzeuge"
+    "tools": "Werkzeuge",
+    "settings": "Einstellungen",
+    "about": "Über Arztool"
   },
   "menu": {
     "file": "Datei",
     "fileMac": "Ablage",
-    "openImage": "Bild öffnen …"
+    "openImage": "Bild öffnen …",
+    "about": "Über Arztool",
+    "settings": "Einstellungen …",
+    "help": "Hilfe"
   },
   "dialog": {
     "openImage": {
@@ -90,7 +95,10 @@
           "no-public-domain": "Die Adresse gehört zu keiner öffentlichen Domain, z. B. einem internen Netz.",
           "blocked-scheme": "Links vom Typ „{{scheme}}:“ können Programme oder Skripte starten und werden nie geöffnet.",
           "invalid-url": "Der Inhalt ist keine gültige Webadresse."
-        }
+        },
+        "trust": "Domain vertrauen",
+        "trusted": "Vertrauenswürdige Domain",
+        "autoOpened": "Automatisch im Viewer geöffnet – {{domain}} steht auf Ihrer Liste vertrauenswürdiger Domains."
       }
     }
   },
@@ -123,5 +131,43 @@
       "downloadFailed": "„{{filename}}“ konnte nicht gespeichert werden",
       "crashed": "Die Seite ist abgestürzt – bitte neu laden"
     }
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "saved": "Gespeichert",
+    "language": {
+      "heading": "Sprache",
+      "de": "Deutsch",
+      "en": "English"
+    },
+    "trusted": {
+      "heading": "Vertrauenswürdige Domains",
+      "intro": "Domains Ihrer bekannten Befundportale. Eingaben wie „www.portal.de“ oder eine ganze Adresse werden auf die Domain gekürzt.",
+      "placeholder": "z. B. patient-cloud.de",
+      "add": "Hinzufügen",
+      "remove": "{{domain}} entfernen",
+      "empty": "Noch keine Domains hinterlegt.",
+      "invalid": "„{{input}}“ ist keine öffentliche Domain (keine IP-Adresse, kein internes Netz).",
+      "duplicate": "{{domain}} steht schon auf der Liste.",
+      "skip": "Links zu diesen Domains ohne Rückfrage öffnen",
+      "skipHint": "Gilt nur für verschlüsselte Links (https) ohne Auffälligkeiten. HTTP-Links und Warnungen fragen immer nach."
+    },
+    "history": {
+      "heading": "Verlauf",
+      "toggle": "Geöffnete Domains merken",
+      "hint": "Gespeichert werden nur Domain und Zeitpunkt – nie die vollständige Adresse, da sie Zugangsdaten enthalten kann. Beim Ausschalten wird der Verlauf gelöscht.",
+      "empty": "Der Verlauf ist leer.",
+      "off": "Der Verlauf ist ausgeschaltet.",
+      "clear": "Verlauf löschen",
+      "domain": "Domain",
+      "openedAt": "Geöffnet"
+    }
+  },
+  "about": {
+    "title": "Über Arztool",
+    "version": "Version {{version}}",
+    "privacy": "Keine Telemetrie, keine Konten, keine Cloud. QR-Codes werden ausschließlich auf diesem Computer gelesen. Netzwerkzugriffe gibt es nur für den Link, den Sie öffnen, und – sobald aktiviert – für die Update-Prüfung.",
+    "components": "Electron {{electron}} · Chromium {{chrome}}",
+    "close": "Schließen"
   }
 }

@@ -12,14 +12,50 @@ function sendToShell(channel: string): void {
 }
 
 /**
+ * Built from the current language; call again after the language changes.
  * The Edit menu is not optional: on macOS, Cmd+V/C/X/A only reach web content
  * through menu roles.
  */
 export function installAppMenu(): void {
   const isMac = process.platform === 'darwin'
 
+  const about: MenuItemConstructorOptions = {
+    id: 'about',
+    label: t('menu.about'),
+    click: () => {
+      sendToShell(IpcEvent.MenuOpenAbout)
+    },
+  }
+  const settings: MenuItemConstructorOptions = {
+    id: 'settings',
+    label: t('menu.settings'),
+    accelerator: 'CmdOrCtrl+,',
+    click: () => {
+      sendToShell(IpcEvent.MenuOpenSettings)
+    },
+  }
+
   const template: MenuItemConstructorOptions[] = [
-    ...(isMac ? [{ role: 'appMenu' as const }] : []),
+    ...(isMac
+      ? [
+          {
+            label: app.getName(),
+            submenu: [
+              about,
+              { type: 'separator' },
+              settings,
+              { type: 'separator' },
+              { role: 'services' },
+              { type: 'separator' },
+              { role: 'hide' },
+              { role: 'hideOthers' },
+              { role: 'unhide' },
+              { type: 'separator' },
+              { role: 'quit' },
+            ] satisfies MenuItemConstructorOptions[],
+          },
+        ]
+      : []),
     {
       label: t(isMac ? 'menu.fileMac' : 'menu.file'),
       submenu: [
@@ -31,6 +67,7 @@ export function installAppMenu(): void {
             sendToShell(IpcEvent.MenuOpenImage)
           },
         },
+        ...(isMac ? [] : [{ type: 'separator' as const }, settings]),
         { type: 'separator' },
         isMac ? { role: 'close' } : { role: 'quit' },
       ],
@@ -54,6 +91,7 @@ export function installAppMenu(): void {
       ],
     },
     { role: 'windowMenu' },
+    ...(isMac ? [] : [{ label: t('menu.help'), submenu: [about] }]),
   ]
 
   Menu.setApplicationMenu(Menu.buildFromTemplate(template))

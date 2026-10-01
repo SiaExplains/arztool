@@ -58,6 +58,22 @@ if (role === 'viewer-toolbar') {
         subscribe(IpcEvent.MenuOpenImage, () => {
           listener()
         }),
+      onOpenSettings: (listener) =>
+        subscribe(IpcEvent.MenuOpenSettings, () => {
+          listener()
+        }),
+      onOpenAbout: (listener) =>
+        subscribe(IpcEvent.MenuOpenAbout, () => {
+          listener()
+        }),
+    },
+    settings: {
+      get: () => ipcRenderer.invoke(IpcChannel.SettingsGet),
+      update: (patch) => ipcRenderer.invoke(IpcChannel.SettingsUpdate, patch),
+    },
+    history: {
+      list: () => ipcRenderer.invoke(IpcChannel.HistoryList),
+      clear: () => ipcRenderer.invoke(IpcChannel.HistoryClear),
     },
     viewer: {
       open: (url) => ipcRenderer.invoke(IpcChannel.ViewerOpen, { url }),

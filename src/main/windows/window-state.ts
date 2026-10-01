@@ -1,8 +1,6 @@
-import { readFileSync } from 'node:fs'
-import { rename, writeFile } from 'node:fs/promises'
-import { join } from 'node:path'
-import { app, screen } from 'electron'
+import { screen } from 'electron'
 import { z } from 'zod'
+import { readJson, writeJson } from '../json-store'
 
 /** Size and position only — never URLs or anything about what was viewed. */
 const BoundsSchema = z.object({
@@ -13,10 +11,6 @@ const BoundsSchema = z.object({
   maximized: z.boolean(),
 })
 export type SavedBounds = z.infer<typeof BoundsSchema>
-
-function filePath(name: string): string {
-  return join(app.getPath('userData'), `${name}-window.json`)
-}
 
 /** Default: 85 % of the primary work area, centred. */
 function defaultBounds(): SavedBounds {
@@ -43,20 +37,13 @@ function clampToDisplay(bounds: SavedBounds): SavedBounds {
 }
 
 export function loadBounds(name: string): SavedBounds {
-  try {
-    const parsed = BoundsSchema.safeParse(JSON.parse(readFileSync(filePath(name), 'utf8')))
-    return parsed.success ? clampToDisplay(parsed.data) : defaultBounds()
-  } catch {
-    return defaultBounds()
-  }
+  const parsed = BoundsSchema.safeParse(readJson(`${name}-window`))
+  return parsed.success ? clampToDisplay(parsed.data) : defaultBounds()
 }
 
 export async function saveBounds(name: string, bounds: SavedBounds): Promise<void> {
-  const target = filePath(name)
-  const tmp = `${target}.tmp`
   try {
-    await writeFile(tmp, JSON.stringify(BoundsSchema.parse(bounds)), { mode: 0o600 })
-    await rename(tmp, target) // atomic replace
+    await writeJson(`${name}-window`, BoundsSchema.parse(bounds))
   } catch {
     // Losing the window position is not worth surfacing to the user.
   }

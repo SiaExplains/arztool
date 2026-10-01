@@ -3,11 +3,15 @@ import { app, BrowserWindow, session } from 'electron'
 import { registerAppIpc } from './ipc/app'
 import { registerClipboardIpc } from './ipc/clipboard'
 import { registerFileIpc } from './ipc/files'
+import { registerSettingsIpc } from './ipc/settings'
 import { registerViewerIpc } from './ipc/viewer'
+import { setMainLanguage } from './i18n'
 import { installAppMenu } from './menu'
+import { getSettings, onSettingsChanged } from './settings'
 import { registerAppProtocol, registerAppSchemePrivileges } from './protocol'
 import { hardenSession, installGlobalGuards } from './security'
 import { createShellWindow, getShellWindow } from './windows/shell'
+import { refreshAllViewers } from './windows/viewer'
 
 registerAppSchemePrivileges()
 app.enableSandbox()
@@ -38,7 +42,15 @@ if (!app.requestSingleInstanceLock()) {
     registerFileIpc()
     registerClipboardIpc()
     registerViewerIpc()
+    registerSettingsIpc()
+
+    setMainLanguage(getSettings().language)
     installAppMenu()
+    onSettingsChanged((settings) => {
+      setMainLanguage(settings.language)
+      installAppMenu()
+      refreshAllViewers()
+    })
     createShellWindow()
 
     app.on('activate', () => {

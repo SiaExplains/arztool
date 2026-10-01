@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { ViewerCommand, ViewerNotice, ViewerState } from '@shared/ipc/channels'
+import { setLanguage } from '../i18n'
 
 const api = window.arztoolViewer
 
@@ -89,8 +90,12 @@ export function ViewerToolbar() {
   const noticeText = useNoticeText(state?.notice ?? null)
 
   useEffect(() => {
-    const unsubscribe = api.onState(setState)
-    void api.getState().then(setState)
+    const apply = (next: ViewerState) => {
+      setLanguage(next.language) // the toolbar follows the app's language setting
+      setState(next)
+    }
+    const unsubscribe = api.onState(apply)
+    void api.getState().then(apply)
     return unsubscribe
   }, [])
 

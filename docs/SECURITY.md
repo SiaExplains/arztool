@@ -55,6 +55,19 @@ whose code lands with that milestone.
   `clipboard-sanitized-write` permission to the renderer.
 - **Formats are sniffed from bytes**, so a renamed file cannot steer which decoder runs.
 
+## Settings and history (M4)
+
+- **Stored in `userData`, owner-only (`0600`), written atomically.** Every field is
+  re-validated on read; anything unusable falls back to the privacy-first default
+  (history off, no trusted domains, confirmation on).
+- **History never stores URLs.** Entries are `{ domain, openedAt }`, validated with a strict
+  schema; reading drops anything else. Turning history off deletes the file.
+- **Trusted domains are normalised in main**, not just in the UI: only public registrable
+  domains are accepted, inputs with credentials (`trusted.de@evil.com`) are refused, and the
+  skip applies only to `ok` verdicts — never to http or any warning.
+- **Settings and history IPC answer the shell only**; the viewer toolbar cannot read or change
+  them.
+
 ## Privacy
 
 - No telemetry, analytics, crash reporting or accounts.

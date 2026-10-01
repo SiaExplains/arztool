@@ -22,6 +22,7 @@ import {
 import { assessUrl, isSameSitePopup, isViewerNavigable } from '@shared/url-safety'
 import { APP_ORIGIN } from '../app-protocol'
 import { t } from '../i18n'
+import { getSettings } from '../settings'
 import { setNavigationPolicy } from '../security'
 import { loadBounds, saveBounds, type SavedBounds } from './window-state'
 
@@ -373,10 +374,11 @@ export class Viewer {
       zoomPercent: Math.round(contents.getZoomFactor() * 100),
       fullscreen: this.window.isFullScreen(),
       notice: this.notice,
+      language: getSettings().language,
     }
   }
 
-  private pushState(): void {
+  pushState(): void {
     if (this.closed || this.toolbar.webContents.isDestroyed()) return
     this.toolbar.webContents.send(IpcEvent.ViewerState, this.state())
   }
@@ -437,6 +439,11 @@ function shortcutCommand(input: Input): ViewerCommand | 'close' | null {
 /** Open a viewer window. `partition` is shared only with same-site popups of an existing viewer. */
 export function openViewerWindow(url: string, partition = `viewer-${randomUUID()}`): Viewer {
   return new Viewer(url, partition)
+}
+
+/** Re-render every open viewer toolbar, e.g. after the language changed. */
+export function refreshAllViewers(): void {
+  for (const viewer of viewersByToolbar.values()) viewer.pushState()
 }
 
 export function viewerForToolbar(contents: WebContents): Viewer | undefined {

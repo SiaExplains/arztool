@@ -12,6 +12,10 @@ export const IpcChannel = {
   ViewerOpen: 'viewer:open',
   ViewerGetState: 'viewer:get-state',
   ViewerCommand: 'viewer:command',
+  SettingsGet: 'settings:get',
+  SettingsUpdate: 'settings:update',
+  HistoryList: 'history:list',
+  HistoryClear: 'history:clear',
 } as const
 
 export type IpcChannel = (typeof IpcChannel)[keyof typeof IpcChannel]
@@ -20,6 +24,8 @@ export type IpcChannel = (typeof IpcChannel)[keyof typeof IpcChannel]
 export const IpcEvent = {
   MenuOpenImage: 'menu:open-image',
   ViewerState: 'viewer:state',
+  MenuOpenSettings: 'menu:open-settings',
+  MenuOpenAbout: 'menu:open-about',
 } as const
 
 /** Which preload API a window gets; passed via `additionalArguments`. */
@@ -32,6 +38,24 @@ export interface AppInfo {
   name: string
   version: string
   platform: Platform
+  electronVersion: string
+  chromeVersion: string
+}
+
+/** Mirrors shared/settings.ts (kept here as plain types so the preload stays dependency-free). */
+export type Language = 'de' | 'en'
+export interface SettingsData {
+  language: Language
+  trustedDomains: string[]
+  skipConfirmForTrusted: boolean
+  historyEnabled: boolean
+}
+export type SettingsPatchData = { [K in keyof SettingsData]?: SettingsData[K] | undefined }
+export type SettingsUpdateResult =
+  { status: 'ok'; settings: SettingsData } | { status: 'invalid-domains'; invalidDomains: string[] }
+export interface HistoryEntryData {
+  domain: string
+  openedAt: string
 }
 
 /** Image bytes handed to the renderer. Format is sniffed there, never trusted from the name. */
@@ -89,6 +113,8 @@ export interface ViewerState {
   zoomPercent: number
   fullscreen: boolean
   notice: ViewerNotice | null
+  /** UI language, so the toolbar follows the settings. */
+  language: Language
 }
 
 /** Request and response types per channel. */
@@ -101,6 +127,10 @@ export interface IpcContract {
   [IpcChannel.ViewerOpen]: { request: { url: string }; response: ViewerOpenResult }
   [IpcChannel.ViewerGetState]: { request: undefined; response: ViewerState }
   [IpcChannel.ViewerCommand]: { request: { command: ViewerCommand }; response: undefined }
+  [IpcChannel.SettingsGet]: { request: undefined; response: SettingsData }
+  [IpcChannel.SettingsUpdate]: { request: SettingsPatchData; response: SettingsUpdateResult }
+  [IpcChannel.HistoryList]: { request: undefined; response: HistoryEntryData[] }
+  [IpcChannel.HistoryClear]: { request: undefined; response: undefined }
 }
 
 /** The API the shell preload exposes on `window.arztool`. */
@@ -117,8 +147,18 @@ export interface ArztoolApi {
     writeText(text: string): Promise<void>
   }
   menu: {
-    /** Returns an unsubscribe function. */
+    /** Each returns an unsubscribe function. */
     onOpenImage(listener: () => void): () => void
+    onOpenSettings(listener: () => void): () => void
+    onOpenAbout(listener: () => void): () => void
+  }
+  settings: {
+    get(): Promise<SettingsData>
+    update(patch: SettingsPatchData): Promise<SettingsUpdateResult>
+  }
+  history: {
+    list(): Promise<HistoryEntryData[]>
+    clear(): Promise<void>
   }
   viewer: {
     open(url: string): Promise<ViewerOpenResult>
