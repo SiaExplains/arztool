@@ -16,7 +16,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
     refused with an explanation. A "Domain vertrauen" button on the safety card adds one in a
     click.
   - **Open without asking (opt-in):** clean https links to a trusted domain open directly.
-    http links and anything with a warning still ask, always.
+    http links and anything with a warning still ask, always. Trusting a domain from the safety card
+    applies from the next scan on; it never opens the link already on screen.
   - **History (off by default):** when switched on, only the domain and time are kept — never
     the full address, which can contain access codes. Switching it off deletes it.
 - About dialog with the version, from the sidebar and the app menu (macOS) / Help menu

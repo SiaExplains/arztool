@@ -127,14 +127,23 @@ test('trusted + skip: clean https opens directly; http on the same domain still 
   await page.getByRole('switch', { name: /ohne Rückfrage öffnen/ }).uncheck()
 })
 
-test('"Domain vertrauen" on the card adds it to the list', async () => {
+test('"Domain vertrauen" adds it to the list but never opens the link on screen', async () => {
+  await stubViewerOpen()
   await openSettings()
-  await page.getByRole('button', { name: 'radiologie-example.de entfernen' }).click()
+  // Self-contained: start from "not trusted" whatever earlier tests left behind.
+  const remove = page.getByRole('button', { name: 'radiologie-example.de entfernen' })
+  if ((await remove.count()) > 0) await remove.click()
+  await expect(remove).toHaveCount(0)
+  await page.getByRole('switch', { name: /ohne Rückfrage öffnen/ }).check()
   await page.getByRole('button', { name: 'QR-Befund öffnen' }).click()
   await resetToIdle(page)
   await dropFixture('single-https.png')
   await page.getByRole('button', { name: 'Domain vertrauen' }).click()
   await expect(page.getByTestId('trusted-badge')).toBeVisible()
+  await page.waitForTimeout(300)
+  expect(viewerToolbarCount()).toBe(0)
+  await openSettings()
+  await page.getByRole('switch', { name: /ohne Rückfrage öffnen/ }).uncheck()
   await openSettings()
   await expect(page.getByTestId('trusted-list')).toContainText('radiologie-example.de')
 })

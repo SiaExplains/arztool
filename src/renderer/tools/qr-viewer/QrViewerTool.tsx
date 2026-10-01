@@ -97,7 +97,12 @@ function Result({
     )
   }
   return picked.payload.kind === 'url' ? (
-    <ConfirmCard url={picked.payload.url} source={outcome.source} onCancel={onReset} />
+    <ConfirmCard
+      key={picked.payload.url}
+      url={picked.payload.url}
+      source={outcome.source}
+      onCancel={onReset}
+    />
   ) : (
     <TextView text={picked.payload.text} source={outcome.source} onReset={onReset} />
   )

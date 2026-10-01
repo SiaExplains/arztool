@@ -73,9 +73,11 @@ export function ConfirmCard({
   }
 
   // Opt-in shortcut: a clean https link on a trusted domain opens straight away.
+  // Decided once, when the card appears: trusting a domain from this card must
+  // not open the link on screen behind the user's back — it applies next time.
   // The ref keeps React StrictMode's double effect from opening two viewers.
   const autoOpenedFor = useRef<string | null>(null)
-  const shouldAutoOpen = settings.skipConfirmForTrusted && trusted
+  const [shouldAutoOpen] = useState(() => settings.skipConfirmForTrusted && trusted)
   useEffect(() => {
     if (!shouldAutoOpen || autoOpenedFor.current === url) return
     autoOpenedFor.current = url
