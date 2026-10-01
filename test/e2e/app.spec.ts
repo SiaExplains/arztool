@@ -1,34 +1,30 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import {
-  _electron as electron,
-  expect,
-  test,
-  type ElectronApplication,
-  type Page,
-} from '@playwright/test'
+import { expect, test, type ElectronApplication, type Page } from '@playwright/test'
+import { launchApp, root } from './launch'
 
-const root = resolve(__dirname, '../..')
 const pkg = JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8')) as { version: string }
 
 let app: ElectronApplication
+let cleanup: () => Promise<void>
 let page: Page
 
 test.beforeAll(async () => {
-  app = await electron.launch({ args: [root], cwd: root })
+  ;({ app, cleanup } = await launchApp())
   page = await app.firstWindow()
   await page.waitForLoadState('domcontentloaded')
 })
 
 test.afterAll(async () => {
-  await app.close()
+  await cleanup()
 })
 
 test('shell boots on app:// with the German UI and the QR tool', async () => {
   expect(page.url()).toBe('app://arztool/index.html')
   await expect(page).toHaveTitle('Arztool')
   await expect(page.locator('html')).toHaveAttribute('lang', 'de')
-  await expect(page.getByRole('heading', { name: 'QR-Befund öffnen' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'QR-Befund öffnen' })).toBeVisible()
+  await expect(page.getByTestId('qr-idle')).toBeVisible()
 })
 
 test('renderer is isolated from Node and only sees the typed bridge', async () => {
@@ -40,7 +36,11 @@ test('renderer is isolated from Node and only sees the typed bridge', async () =
       bridgeKeys: Object.keys(window.arztool),
     }
   })
-  expect(globals).toEqual({ require: 'undefined', process: 'undefined', bridgeKeys: ['app'] })
+  expect(globals).toEqual({
+    require: 'undefined',
+    process: 'undefined',
+    bridgeKeys: ['app', 'files', 'clipboard', 'menu'],
+  })
 })
 
 test('strict CSP is present', async () => {

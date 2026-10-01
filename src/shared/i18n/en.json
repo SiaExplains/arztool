@@ -6,11 +6,66 @@
   "nav": {
     "tools": "Tools"
   },
+  "menu": {
+    "file": "File",
+    "fileMac": "File",
+    "openImage": "Open Image …"
+  },
+  "dialog": {
+    "openImage": {
+      "title": "Open QR code image",
+      "filter": "Images and PDF"
+    }
+  },
   "tools": {
     "qrViewer": {
       "title": "Open QR result",
       "description": "Load a patient's QR code and view the result in a large window.",
-      "comingSoon": "This feature is being built."
+      "input": {
+        "heading": "Load a QR code",
+        "hint": "Drag an image here, paste it with {{shortcut}}, or open a file.",
+        "shortcutWin": "Ctrl+V",
+        "open": "Open image …",
+        "paste": "From clipboard",
+        "formats": "PNG, JPG, WEBP, BMP, GIF, HEIC (macOS) or a single-page PDF",
+        "dropOverlay": "Drop the image to read the QR code"
+      },
+      "busy": "Reading QR code …",
+      "reset": "Load another image",
+      "source": "Source: {{name}}",
+      "pdfPageNote": "The PDF has {{count}} pages. Only page 1 was read.",
+      "errors": {
+        "title": "That didn't work",
+        "tooLarge": "The file is larger than 50 MB.",
+        "readFailed": "The file could not be read.",
+        "heicUnsupported": "HEIC images are not supported on Windows. Please save as JPG or PNG and load it again.",
+        "heicFailed": "The HEIC image could not be converted.",
+        "unsupportedFormat": "This file format is not supported.",
+        "decodeFailed": "The image could not be processed.",
+        "pdfFailed": "The PDF could not be opened.",
+        "clipboardEmpty": "There is no image on the clipboard."
+      },
+      "none": {
+        "title": "No QR code found",
+        "intro": "This usually helps:",
+        "tipCrop": "Crop the image to the QR code",
+        "tipLight": "Photograph in good light without glare",
+        "tipResolution": "Use a higher resolution, don't shrink the image",
+        "tipStraight": "Capture the whole code, as straight as possible"
+      },
+      "multiple": {
+        "title": "{{count}} QR codes found",
+        "hint": "Please choose the code you want."
+      },
+      "url": {
+        "title": "Link detected",
+        "pending": "Safety check and viewer follow in the next step."
+      },
+      "text": {
+        "title": "Not a link – the QR code contains text",
+        "copy": "Copy text",
+        "copied": "Copied"
+      }
     }
   },
   "footer": {

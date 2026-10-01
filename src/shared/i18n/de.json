@@ -6,11 +6,66 @@
   "nav": {
     "tools": "Werkzeuge"
   },
+  "menu": {
+    "file": "Datei",
+    "fileMac": "Ablage",
+    "openImage": "Bild öffnen …"
+  },
+  "dialog": {
+    "openImage": {
+      "title": "QR-Code-Bild öffnen",
+      "filter": "Bilder und PDF"
+    }
+  },
   "tools": {
     "qrViewer": {
       "title": "QR-Befund öffnen",
       "description": "QR-Code eines Patienten laden und den Befund groß anzeigen.",
-      "comingSoon": "Diese Funktion wird gerade gebaut."
+      "input": {
+        "heading": "QR-Code laden",
+        "hint": "Bild hierher ziehen, mit {{shortcut}} einfügen oder öffnen.",
+        "shortcutWin": "Strg+V",
+        "open": "Bild öffnen …",
+        "paste": "Aus Zwischenablage",
+        "formats": "PNG, JPG, WEBP, BMP, GIF, HEIC (macOS) oder einseitiges PDF",
+        "dropOverlay": "Bild loslassen, um den QR-Code zu lesen"
+      },
+      "busy": "QR-Code wird gelesen …",
+      "reset": "Anderes Bild laden",
+      "source": "Quelle: {{name}}",
+      "pdfPageNote": "Das PDF hat {{count}} Seiten. Gelesen wurde nur Seite 1.",
+      "errors": {
+        "title": "Das hat nicht geklappt",
+        "tooLarge": "Die Datei ist größer als 50 MB.",
+        "readFailed": "Die Datei konnte nicht gelesen werden.",
+        "heicUnsupported": "HEIC-Bilder werden unter Windows nicht unterstützt. Bitte als JPG oder PNG speichern und erneut laden.",
+        "heicFailed": "Das HEIC-Bild konnte nicht umgewandelt werden.",
+        "unsupportedFormat": "Dieses Dateiformat wird nicht unterstützt.",
+        "decodeFailed": "Das Bild konnte nicht verarbeitet werden.",
+        "pdfFailed": "Das PDF konnte nicht geöffnet werden.",
+        "clipboardEmpty": "In der Zwischenablage ist kein Bild."
+      },
+      "none": {
+        "title": "Kein QR-Code gefunden",
+        "intro": "So klappt es meistens:",
+        "tipCrop": "Bild auf den QR-Code zuschneiden",
+        "tipLight": "Bei gutem Licht ohne Spiegelung fotografieren",
+        "tipResolution": "Höhere Auflösung verwenden, nicht verkleinern",
+        "tipStraight": "Den Code möglichst gerade und vollständig aufnehmen"
+      },
+      "multiple": {
+        "title": "{{count}} QR-Codes gefunden",
+        "hint": "Bitte den gewünschten Code auswählen."
+      },
+      "url": {
+        "title": "Link erkannt",
+        "pending": "Sicherheitsprüfung und Anzeige folgen im nächsten Schritt."
+      },
+      "text": {
+        "title": "Kein Link – der QR-Code enthält Text",
+        "copy": "Text kopieren",
+        "copied": "Kopiert"
+      }
     }
   },
   "footer": {
