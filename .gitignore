@@ -1,0 +1,17 @@
+node_modules/
+out/
+release/
+test-results/
+playwright-report/
+*.log
+.DS_Store
+Thumbs.db
+
+# Signing material and secrets — never commit
+.env
+.env.*
+!.env.example
+*.p12
+*.pfx
+*.cer
+*.provisionprofile
