@@ -1,0 +1,19 @@
+{
+  "app": {
+    "name": "Arztool",
+    "tagline": "The digital toolkit for doctors"
+  },
+  "nav": {
+    "tools": "Tools"
+  },
+  "tools": {
+    "qrViewer": {
+      "title": "Open QR result",
+      "description": "Load a patient's QR code and view the result in a large window.",
+      "comingSoon": "This feature is being built."
+    }
+  },
+  "footer": {
+    "version": "Version {{version}}"
+  }
+}

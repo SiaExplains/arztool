@@ -1,0 +1,5 @@
+allowBuilds:
+  # esbuild ships its platform binary via postinstall; electron-vite needs it.
+  esbuild: true
+  # Squirrel.Windows installer — unused, we ship NSIS.
+  electron-winstaller: false
