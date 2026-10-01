@@ -1,0 +1,9 @@
+{
+  "https": "https://befund.radiologie-example.de/r/AbC123?token=8f3e2c1d",
+  "httpsSecond": "https://portal.labor-example.de/ergebnis/77881",
+  "http": "http://befund.radiologie-example.de/r/AbC123",
+  "javascript": "javascript:alert(document.cookie)",
+  "data": "data:text/html,<script>alert(1)</script>",
+  "idn": "https://bеfund.radiologie-example.de/r/AbC123",
+  "text": "Befund-ID 4711 · Zugangs-PIN 0815"
+}

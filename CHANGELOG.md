@@ -4,6 +4,20 @@ All notable changes to Arztool are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.2.0] — 2026-10-01
+
+### Added
+
+- Load a patient's QR code three ways: drag an image anywhere onto the window, paste it
+  (Cmd/Ctrl+V or the "Aus Zwischenablage" button), or open a file (button or Cmd/Ctrl+O).
+  Pasting a file copied in Finder or Explorer works too.
+- Supported inputs: PNG, JPG, WEBP, BMP, GIF, single-page PDF, and HEIC on macOS.
+- QR codes are read entirely on the computer — nothing is uploaded. Small, rotated,
+  low-contrast and inverted codes are handled.
+- When an image has several codes, each is listed with a small preview to pick from.
+- Clear results: the detected link, plain text with a copy button, or tips when no code was
+  found (crop, light, resolution, angle). Every error has a plain-language message.
+
 ## [0.1.0] — 2026-10-01
 
 ### Added

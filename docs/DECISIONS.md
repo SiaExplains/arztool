@@ -46,10 +46,16 @@ Strict same-origin would break them. Popups are allowed when the registrable dom
 the bundled Public Suffix List in `tldts`) matches and the scheme is https, and they open in a
 viewer window sharing the opener's partition (M3).
 
-## 008 — HEIC on macOS only (2026-10-01)
+## 008 — HEIC on macOS only (2026-10-01, revised in M2)
 
-Chromium cannot decode HEIC. Electron's `nativeImage` can on macOS. On Windows the app shows a
-clear "please convert to JPG/PNG" message rather than bundling an LGPL HEIF decoder (M2).
+Chromium cannot decode HEIC. On Windows the app shows a clear "please convert to JPG/PNG" message
+rather than bundling an LGPL HEIF decoder.
+
+Revised: the original plan was Electron's `nativeImage`, but testing showed it cannot decode HEIC
+on macOS either (from buffer or path). macOS ships `/usr/bin/sips`, which converts in ~0.1 s.
+Main writes the bytes to a private `0700` temp dir, runs `sips` by absolute path with fixed
+arguments and no shell, reads the PNG back and deletes the dir in `finally`. The image is on disk
+for well under a second.
 
 ## 009 — Not a medical device (2026-10-01)
 
@@ -63,6 +69,39 @@ Writing Electron fuses modifies the binary after the linker signed it, and Apple
 launches. Default `mac.identity: '-'` (ad-hoc) with `hardenedRuntime: false`, since hardened runtime
 rejects ad-hoc-signed Electron frameworks. The Developer ID release path (M5) overrides both.
 Ad-hoc builds still need right-click → Open after download; only notarization removes that.
+
+## 011 — Decode in the renderer, bundled WASM only (2026-10-01)
+
+zxing-wasm runs in the renderer, so image bytes never cross IPC except for HEIC conversion. The
+library fetches its `.wasm` from jsDelivr by default; `prepareZXingModule` points `locateFile` at
+the copy Vite bundles into the app, and the unit tests pass `wasmBinary` directly. pdf.js is
+lazy-loaded only for PDFs, with its worker bundled and `useWasm: false`. An E2E test asserts no
+network request leaves the app while decoding.
+
+## 012 — Formats are sniffed from bytes (2026-10-01)
+
+Drag sources and clipboard managers lie about names and MIME types. `sniffInputFormat` reads magic
+bytes; the file name is only shown to the user.
+
+## 013 — Electron 44 clipboard API (2026-10-01)
+
+Electron 44 replaced the synchronous clipboard (`readImage`, `readBuffer`, `read(format)`) with an
+async, W3C-style `ClipboardItem` API. Probing it showed a copied file arrives as `text/uri-list`
+and a screenshot as `image/png` on macOS. The file reference is checked first because Finder also
+offers the file's icon as an image.
+
+## 014 — Isolated profile for tests (2026-10-01)
+
+The single-instance lock is keyed on the user-data directory, so E2E runs failed whenever a
+packaged Arztool was open. Unpackaged runs honour `ARZTOOL_USER_DATA_DIR`; each E2E launch gets
+a throwaway directory. Packaged builds ignore the variable.
+
+## 015 — Only main's runtime deps are `dependencies` (2026-10-01)
+
+electron-builder copies everything in `dependencies` into the app. Renderer libraries (React,
+i18next, zxing-wasm, pdf.js) are bundled by Vite and live in `devDependencies`; only `zod`, which
+main keeps external, is a runtime dependency. Found when pdf.js's optional Node canvas
+(`@napi-rs/canvas`, a native single-arch module) broke the universal macOS build.
 
 ## Future ideas (out of scope for now)
 

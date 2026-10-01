@@ -5,7 +5,7 @@
 The first tool opens a patient's imaging result (CT, MRI, X-ray) from the QR code on their
 printout or screenshot in a large, clean viewer window, instead of on a phone screen.
 
-> Status: early development (M1 — scaffold). See [CHANGELOG.md](CHANGELOG.md).
+> Status: early development (M2 — QR input and decoding). See [CHANGELOG.md](CHANGELOG.md).
 
 ## Requirements
 
@@ -67,6 +67,18 @@ Unsigned installers trigger a SmartScreen warning.
 
 Cross-building Windows installers from macOS is not supported for this project; CI builds each
 platform on its own runner.
+
+## Test fixtures
+
+`test/fixtures/` holds generated QR images (single, multiple, rotated, low-contrast, screenshot,
+non-URL, `http:`, `javascript:`, `data:`, IDN homograph, PDF, BMP, HEIC) and a `manifest.json`
+with their payloads. They are committed; regenerate with:
+
+```bash
+pnpm fixtures
+```
+
+The HEIC fixture needs macOS (`sips`).
 
 ## CI and releases
 

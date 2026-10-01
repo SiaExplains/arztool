@@ -42,6 +42,19 @@ whose code lands with that milestone.
 - **Single instance.** A second launch focuses the existing window instead of starting a second
   process with its own state.
 
+## QR input (M2)
+
+- **Decoding is local.** zxing-wasm and pdf.js load only from the app bundle (see DECISIONS 011);
+  an E2E test asserts zero network requests while decoding.
+- **Main never reads paths chosen by the renderer.** The picker path comes from the native
+  dialog; the clipboard path comes from the OS clipboard. The renderer can only send bytes
+  (HEIC conversion, ≤ 50 MB, zod-checked).
+- **HEIC conversion** uses `/usr/bin/sips` via `execFile` (no shell) on a private temp file that
+  is deleted immediately.
+- **Clipboard writes** go through IPC (max 16 KB) instead of granting the
+  `clipboard-sanitized-write` permission to the renderer.
+- **Formats are sniffed from bytes**, so a renamed file cannot steer which decoder runs.
+
 ## Privacy
 
 - No telemetry, analytics, crash reporting or accounts.

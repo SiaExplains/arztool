@@ -48,6 +48,25 @@ A tool is a folder under `src/renderer/tools/` plus one entry in `tools/registry
 The shell renders the list and mounts the active tool. Tools never import from each other; shared
 UI goes in `renderer/shell/` once a second tool actually needs it.
 
+## QR viewer: input → decode
+
+```
+drop / paste / File→Open / buttons
+        │  InputFile { name, bytes }        (picker + clipboard fallback read in main)
+        ▼
+decodeInput (renderer/tools/qr-viewer/decode/pipeline.ts)
+  sniffInputFormat(bytes)  → png | jpeg | webp | bmp | gif | pdf | heic | unsupported
+  heic → IPC image:convert-heic → main runs /usr/bin/sips (macOS only)
+  pdf  → pdf.js (lazy import) renders page 1
+  else → createImageBitmap → ImageData (max 4096 px)
+  readQrCodes(ImageData)   → zxing-wasm, bundled .wasm, shared QR_READER_OPTIONS
+  classifyPayload(text)    → url | text
+        ▼
+DecodeOutcome → views: idle · busy · error · none (tips) · pick (≥2) · url · text
+```
+
+The URL view is an interim screen; M3 replaces it with the safety confirmation and viewer.
+
 ## Internationalisation
 
 German (`shared/i18n/de.json`) is the source catalogue and the default language; keys are

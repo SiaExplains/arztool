@@ -15,3 +15,7 @@ Thumbs.db
 *.pfx
 *.cer
 *.provisionprofile
+
+# Real patient documents used for local testing — never commit
+/qr-sample.*
+/samples-private/

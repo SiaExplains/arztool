@@ -1,12 +1,20 @@
 import { join } from 'node:path'
 import { app, BrowserWindow, session } from 'electron'
 import { registerAppIpc } from './ipc/app'
+import { registerClipboardIpc } from './ipc/clipboard'
+import { registerFileIpc } from './ipc/files'
+import { installAppMenu } from './menu'
 import { registerAppProtocol, registerAppSchemePrivileges } from './protocol'
 import { hardenSession, installGlobalGuards } from './security'
 import { createShellWindow, getShellWindow } from './windows/shell'
 
 registerAppSchemePrivileges()
 app.enableSandbox()
+
+// Tests and parallel dev runs get their own profile (and therefore their own
+// single-instance lock). Ignored in packaged builds.
+const devUserData = process.env['ARZTOOL_USER_DATA_DIR']
+if (!app.isPackaged && devUserData) app.setPath('userData', devUserData)
 
 if (!app.requestSingleInstanceLock()) {
   app.quit()
@@ -26,6 +34,9 @@ if (!app.requestSingleInstanceLock()) {
     hardenSession(session.defaultSession)
     registerAppProtocol(join(__dirname, '../renderer'))
     registerAppIpc()
+    registerFileIpc()
+    registerClipboardIpc()
+    installAppMenu()
     createShellWindow()
 
     app.on('activate', () => {
