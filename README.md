@@ -5,8 +5,9 @@
 The first tool opens a patient's imaging result (CT, MRI, X-ray) from the QR code on their
 printout or screenshot in a large, clean viewer window, instead of on a phone screen.
 
-> Status: 0.6.0 — feature-complete first tool; signing activates once certificates are set up
-> ([docs/RELEASING.md](docs/RELEASING.md)). See [CHANGELOG.md](CHANGELOG.md).
+> Status: 0.6.3 — the first tool (QR → result viewer) is feature-complete. Releases are signed and
+> notarized once the certificates are configured ([docs/RELEASING.md](docs/RELEASING.md)). See
+> [CHANGELOG.md](CHANGELOG.md).
 
 ## Requirements
 
@@ -55,7 +56,8 @@ Produces `release/<version>/Arztool-<version>-mac-universal.dmg`. Without the en
 electron-builder will try to sign with any Developer ID it finds in your keychain.
 Without a Developer ID the app is ad-hoc signed (an unsigned Electron app with fuses is killed by
 macOS on Apple Silicon — see [DECISIONS 010](docs/DECISIONS.md)). It runs locally; a downloaded
-copy needs right-click → Open the first time until notarization lands in M5.
+copy needs right-click → Open the first time until releases are signed and notarized
+([docs/RELEASING.md](docs/RELEASING.md)).
 
 ### Windows
 
@@ -101,6 +103,7 @@ list and how to verify signatures.
 - [docs/SECURITY.md](docs/SECURITY.md) — Electron security checklist, item by item
 - [docs/DECISIONS.md](docs/DECISIONS.md) — short decision log and future ideas
 - [docs/RELEASING.md](docs/RELEASING.md) — signing, notarization, releases, auto-update
+- [CLAUDE.md](CLAUDE.md) — working rules for contributors and coding agents
 
 ## Privacy
 
