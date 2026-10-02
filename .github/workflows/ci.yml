@@ -52,7 +52,7 @@ jobs:
         if: runner.os == 'Windows'
         run: pnpm package:win
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: installers-${{ runner.os }}
           path: |
@@ -61,7 +61,7 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: playwright-report-${{ runner.os }}
