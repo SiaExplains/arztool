@@ -148,6 +148,20 @@ The selected tool and the visible page are separate state, so a result survives 
 Settings. Because the QR tool listens window-wide, any drop, paste or File → Open switches the
 view back to it — nothing is decoded out of sight.
 
+## 023 — Paste from other apps: measured, not assumed (2026-10-02)
+
+Probing Electron 44 on macOS with the pasteboard types real apps write showed:
+
+- TIFF (Preview, Photos), JPEG, HEIC and PDF _data_ all reach the page as `image/png` already.
+- HTML-only selections (webmail, Outlook) carry the image as an inline `data:` URL or just a
+  link. Inline images are now decoded; links are explained, never fetched (no network for
+  decoding).
+- With several files copied, Electron exposes **only the first** — in the page _and_ in
+  `clipboard.read()`, including raw pasteboard formats. "notes.txt + qr.png" therefore cannot
+  find the image on macOS; the user is told to copy just the image. Main still tries every path
+  it receives, which helps where the platform delivers the full list. Drops are unaffected: a
+  drop carries all files and the first image/PDF is used.
+
 ## Future ideas (out of scope for now)
 
 - Webcam QR scanning.

@@ -5,6 +5,17 @@ async function fileToInput(file: File): Promise<InputFile> {
   return { name: file.name || 'image', bytes: new Uint8Array(await file.arrayBuffer()) }
 }
 
+/** Images and PDFs we can decode; anything else is skipped when several files arrive. */
+function isDecodable(file: File): boolean {
+  return file.type.startsWith('image/') || file.type === 'application/pdf'
+}
+
+/** First decodable file, or — for a single file of unknown type — that file (bytes are sniffed later). */
+function pickFile(files: FileList | undefined): File | undefined {
+  const list = Array.from(files ?? [])
+  return list.find(isDecodable) ?? (list.length === 1 ? list[0] : undefined)
+}
+
 function isEditable(target: EventTarget | null): boolean {
   return (
     target instanceof HTMLElement &&
@@ -59,7 +70,7 @@ export function useInputSources(handlers: Handlers): { dragging: boolean } {
       e.preventDefault()
       depth = 0
       setDragging(false)
-      const file = e.dataTransfer?.files[0]
+      const file = pickFile(e.dataTransfer?.files)
       if (file)
         void fileToInput(file).then((input) => {
           latest.current.onFile(input)
@@ -67,7 +78,9 @@ export function useInputSources(handlers: Handlers): { dragging: boolean } {
     }
     const onPaste = (e: ClipboardEvent) => {
       if (isEditable(e.target)) return
-      const file = Array.from(e.clipboardData?.files ?? []).at(0)
+      // Chromium exposes only the *first* copied file to the page. If that one is not
+      // an image, main reads the whole clipboard (all files, image data, HTML).
+      const file = Array.from(e.clipboardData?.files ?? []).find(isDecodable)
       e.preventDefault()
       if (file)
         void fileToInput(file).then((input) => {

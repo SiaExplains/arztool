@@ -75,7 +75,13 @@ export type OpenImageResult =
 export type ConvertHeicResult =
   { status: 'ok'; bytes: Uint8Array } | { status: 'error'; error: InputError }
 
-export type ReadClipboardImageResult = { status: 'ok'; file: InputFile } | { status: 'empty' }
+export type ReadClipboardImageResult =
+  | { status: 'ok'; file: InputFile }
+  | { status: 'empty' }
+  /** HTML only linked to an image on the web; fetching it would be a network call. */
+  | { status: 'reference-only' }
+  /** Files were copied, but none of the ones we can see is an image or PDF. */
+  | { status: 'no-image-file' }
 
 export type ViewerOpenResult = { status: 'opened' } | { status: 'blocked' }
 

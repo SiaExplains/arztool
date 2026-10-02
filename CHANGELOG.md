@@ -4,6 +4,25 @@ All notable changes to Arztool are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.5.0] — 2026-10-02
+
+### Added
+
+- Pasting a QR image copied in another app now works in more cases:
+  - a selection copied from webmail, Outlook or a web page where the picture is embedded in the
+    copied content;
+  - several files dropped at once — the first image or PDF among them is used.
+- Clearer messages when a paste cannot work:
+  - the copied content only _links_ to an image on the internet — Arztool does not download
+    anything for decoding, so it explains how to copy the image itself;
+  - the copied file is not an image (for example when several files were copied and the first
+    one is a document).
+
+### Verified
+
+- Images copied from Preview, Photos (TIFF), as JPEG or HEIC data, PDF page data, Chrome's
+  "Copy image" and image files copied in Finder all paste correctly.
+
 ## [0.4.0] — 2026-10-01
 
 ### Added

@@ -51,7 +51,9 @@
         "unsupportedFormat": "This file format is not supported.",
         "decodeFailed": "The image could not be processed.",
         "pdfFailed": "The PDF could not be opened.",
-        "clipboardEmpty": "There is no image on the clipboard."
+        "clipboardEmpty": "There is no image on the clipboard.",
+        "clipboardReferenceOnly": "The copied picture is only a link to a web page – Arztool does not download anything for decoding. Please copy the image itself (right-click → “Copy Image”) or paste a screenshot.",
+        "clipboardNoImageFile": "The copied file is not an image or PDF. If you copied several files, please copy just the image with the QR code."
       },
       "none": {
         "title": "No QR code found",

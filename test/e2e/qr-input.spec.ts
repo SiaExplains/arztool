@@ -1,5 +1,7 @@
-import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { execFileSync } from 'node:child_process'
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join, resolve } from 'node:path'
 import { expect, test, type ElectronApplication, type Page } from '@playwright/test'
 import { launchApp, resetToIdle, root } from './launch'
 
@@ -179,6 +181,131 @@ test.describe('paste', () => {
     })
     await pasteViaEditMenu()
     await expect(page.getByRole('alert')).toHaveText('In der Zwischenablage ist kein Bild.')
+  })
+})
+
+test.describe('paste from other apps', () => {
+  /** Put raw pasteboard data on the macOS clipboard exactly the way other apps do. */
+  function macPasteboard(script: string): void {
+    execFileSync('osascript', [
+      '-l',
+      'JavaScript',
+      '-e',
+      `ObjC.import('AppKit'); var pb = $.NSPasteboard.generalPasteboard; pb.clearContents; ${script}; 'ok'`,
+    ])
+  }
+
+  async function writeHtml(html: string): Promise<void> {
+    await app.evaluate(async ({ clipboard, ClipboardItem }, markup) => {
+      await clipboard.write([new ClipboardItem({ 'text/html': markup })])
+    }, html)
+  }
+
+  const pngB64 = () => readFileSync(resolve(fixtures, 'single-https.png')).toString('base64')
+
+  test('HTML with the image inline (webmail / Office selection) via Cmd/Ctrl+V', async () => {
+    await writeHtml(`<p>Ihr Befund</p><img src="data:image/png;base64,${pngB64()}">`)
+    await pasteViaEditMenu()
+    await expect(page.getByTestId('confirm-url')).toHaveText(url('https'))
+  })
+
+  test('HTML with the image inline via the clipboard button', async () => {
+    await writeHtml(`<img src="data:image/png;base64,${pngB64()}">`)
+    await page.getByRole('button', { name: 'Aus Zwischenablage' }).click()
+    await expect(page.getByTestId('confirm-url')).toHaveText(url('https'))
+  })
+
+  test('HTML that only links to a web image: explained, nothing downloaded', async () => {
+    const requests: string[] = []
+    const onRequest = (req: { url(): string }) => {
+      if (!/^(app|data|blob):/.test(req.url())) requests.push(req.url())
+    }
+    page.on('request', onRequest)
+    await writeHtml('<img src="https://portal.example.de/qr.png">')
+    await pasteViaEditMenu()
+    await expect(page.getByRole('alert')).toContainText('nur ein Verweis')
+    page.off('request', onRequest)
+    expect(requests).toEqual([])
+  })
+
+  test('image + HTML together (Chrome "Copy image") uses the image', async () => {
+    const png = readFileSync(resolve(fixtures, 'http.png'))
+    await app.evaluate(async ({ clipboard, ClipboardItem }, b64) => {
+      await clipboard.write([
+        new ClipboardItem({
+          'image/png': new Blob([Buffer.from(b64, 'base64')], { type: 'image/png' }),
+          'text/html': '<img src="https://example.com/qr.png">',
+        }),
+      ])
+    }, png.toString('base64'))
+    await pasteViaEditMenu()
+    await expect(page.getByTestId('confirm-url')).toHaveText(url('http'))
+  })
+
+  for (const [label, sipsFormat, uti] of [
+    ['TIFF (Preview, Photos)', 'tiff', 'public.tiff'],
+    ['JPEG', 'jpeg', 'public.jpeg'],
+  ] as const) {
+    test(`raw ${label} image data from another app (macOS)`, async () => {
+      test.skip(process.platform !== 'darwin', 'macOS pasteboard types')
+      const dir = mkdtempSync(join(tmpdir(), 'arztool-clip-'))
+      const file = join(dir, `qr.${sipsFormat}`)
+      execFileSync('sips', [
+        '-s',
+        'format',
+        sipsFormat,
+        resolve(fixtures, 'single-https.png'),
+        '--out',
+        file,
+      ])
+      macPasteboard(`pb.setDataForType($.NSData.dataWithContentsOfFile('${file}'), '${uti}')`)
+      await pasteViaEditMenu()
+      await expect(page.getByTestId('confirm-url')).toHaveText(url('https'))
+      rmSync(dir, { recursive: true, force: true })
+    })
+  }
+
+  test('a text file and an image copied together: clear hint to copy just the image (macOS)', async () => {
+    // Electron 44 exposes only the first copied file on macOS, so the image is invisible here.
+    test.skip(process.platform !== 'darwin', 'macOS pasteboard types')
+    const dir = mkdtempSync(join(tmpdir(), 'arztool-clip-'))
+    const notes = join(dir, 'notes.txt')
+    writeFileSync(notes, 'Notizen zum Befund')
+    const png = resolve(fixtures, 'http.png')
+    macPasteboard(
+      `pb.writeObjects($([$.NSURL.fileURLWithPath('${notes}'), $.NSURL.fileURLWithPath('${png}')]))`,
+    )
+    await pasteViaEditMenu()
+    await expect(page.getByRole('alert')).toContainText('kopieren Sie bitte nur das Bild')
+    rmSync(dir, { recursive: true, force: true })
+  })
+
+  test('only a non-image file copied: explained, never its Finder icon decoded (macOS)', async () => {
+    test.skip(process.platform !== 'darwin', 'macOS pasteboard types')
+    const dir = mkdtempSync(join(tmpdir(), 'arztool-clip-'))
+    const notes = join(dir, 'notes.txt')
+    writeFileSync(notes, 'Notizen')
+    macPasteboard(`pb.writeObjects($([$.NSURL.fileURLWithPath('${notes}')]))`)
+    await page.getByRole('button', { name: 'Aus Zwischenablage' }).click()
+    await expect(page.getByRole('alert')).toContainText('Die kopierte Datei ist kein Bild')
+    rmSync(dir, { recursive: true, force: true })
+  })
+
+  test('dropping several files picks the first image', async () => {
+    const png = readFileSync(resolve(fixtures, 'single-https.png')).toString('base64')
+    await page.evaluate((b64) => {
+      const dt = new DataTransfer()
+      dt.items.add(new File(['Notizen'], 'notes.txt', { type: 'text/plain' }))
+      dt.items.add(
+        new File([Uint8Array.from(atob(b64), (c) => c.charCodeAt(0))], 'qr.png', {
+          type: 'image/png',
+        }),
+      )
+      window.dispatchEvent(
+        new DragEvent('drop', { dataTransfer: dt, bubbles: true, cancelable: true }),
+      )
+    }, png)
+    await expect(page.getByTestId('confirm-url')).toHaveText(url('https'))
   })
 })
 

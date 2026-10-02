@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from 'react'
-import type { InputFile } from '@shared/ipc/channels'
+import type { InputFile, ReadClipboardImageResult } from '@shared/ipc/channels'
 import {
   decodeInput,
   type DecodeError,
@@ -7,14 +7,29 @@ import {
   type FoundCode,
 } from './decode/pipeline'
 import { useInputSources } from './useInputSources'
-import { BusyView, DropOverlay, ErrorView, IdleView, NoneView, PickView, TextView } from './views'
+import {
+  BusyView,
+  DropOverlay,
+  ErrorView,
+  IdleView,
+  NoneView,
+  PickView,
+  TextView,
+  type ClipboardError,
+} from './views'
 import { ConfirmCard } from './ConfirmCard'
 
 type State =
   | { status: 'idle' }
   | { status: 'busy' }
-  | { status: 'error'; error: DecodeError | 'clipboard-empty' }
+  | { status: 'error'; error: DecodeError | ClipboardError }
   | { status: 'done'; outcome: Exclude<DecodeOutcome, { kind: 'error' }>; picked: FoundCode | null }
+
+const CLIPBOARD_ERRORS = {
+  empty: 'clipboard-empty',
+  'reference-only': 'clipboard-reference-only',
+  'no-image-file': 'clipboard-no-image-file',
+} as const satisfies Record<Exclude<ReadClipboardImageResult['status'], 'ok'>, ClipboardError>
 
 export function QrViewerTool() {
   const [state, setState] = useState<State>({ status: 'idle' })
@@ -46,7 +61,7 @@ export function QrViewerTool() {
   const pasteFromSystem = useCallback(() => {
     void window.arztool.clipboard.readImage().then((result) => {
       if (result.status === 'ok') decode(result.file)
-      else setState({ status: 'error', error: 'clipboard-empty' })
+      else setState({ status: 'error', error: CLIPBOARD_ERRORS[result.status] })
     })
   }, [decode])
 

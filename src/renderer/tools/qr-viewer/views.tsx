@@ -12,7 +12,10 @@ import {
 
 const isMac = /Mac/.test(navigator.userAgent)
 
-const ERROR_KEYS: Record<DecodeError | 'clipboard-empty', ParseKeys> = {
+export type ClipboardError =
+  'clipboard-empty' | 'clipboard-reference-only' | 'clipboard-no-image-file'
+
+const ERROR_KEYS: Record<DecodeError | ClipboardError, ParseKeys> = {
   'too-large': 'tools.qrViewer.errors.tooLarge',
   'read-failed': 'tools.qrViewer.errors.readFailed',
   'heic-unsupported': 'tools.qrViewer.errors.heicUnsupported',
@@ -21,6 +24,8 @@ const ERROR_KEYS: Record<DecodeError | 'clipboard-empty', ParseKeys> = {
   'decode-failed': 'tools.qrViewer.errors.decodeFailed',
   'pdf-failed': 'tools.qrViewer.errors.pdfFailed',
   'clipboard-empty': 'tools.qrViewer.errors.clipboardEmpty',
+  'clipboard-reference-only': 'tools.qrViewer.errors.clipboardReferenceOnly',
+  'clipboard-no-image-file': 'tools.qrViewer.errors.clipboardNoImageFile',
 }
 
 export function IdleView({ onOpen, onPaste }: { onOpen: () => void; onPaste: () => void }) {
@@ -77,7 +82,7 @@ export function ErrorView({
   error,
   onReset,
 }: {
-  error: DecodeError | 'clipboard-empty'
+  error: DecodeError | ClipboardError
   onReset: () => void
 }) {
   const { t } = useTranslation()
