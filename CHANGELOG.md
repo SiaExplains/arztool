@@ -4,6 +4,15 @@ All notable changes to Arztool are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.6.5] — 2026-10-02
+
+### Fixed
+
+- Closing a result window always clears its private session, even if part of the window was
+  already shut down (for example while Arztool itself is quitting).
+- Test suite: a slow Windows build machine can no longer fail a run by being slow to close
+  windows at the end of a test.
+
 ## [0.6.4] — 2026-10-02
 
 ### Changed

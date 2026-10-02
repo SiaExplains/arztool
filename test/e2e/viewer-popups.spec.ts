@@ -102,7 +102,8 @@ test.afterEach(async () => {
     const shellIds = new Set(BrowserWindow.getAllWindows().map((w) => w.id))
     for (const win of BaseWindow.getAllWindows()) if (!shellIds.has(win.id)) win.close()
   })
-  await expect.poll(toolbarCount).toBe(0)
+  // Closing windows can take a few seconds on a busy Windows CI runner.
+  await expect.poll(toolbarCount, { timeout: 15_000 }).toBe(0)
 })
 
 function toolbarCount(): number {

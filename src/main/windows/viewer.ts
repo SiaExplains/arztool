@@ -260,9 +260,11 @@ export class Viewer {
       this.closed = true
       viewersByToolbar.delete(this.toolbar.webContents.id)
       viewersByContent.delete(this.content.webContents.id)
-      // WebContentsView contents are not destroyed with the window.
-      this.toolbar.webContents.close()
-      this.content.webContents.close()
+      // WebContentsView contents are not destroyed with the window. Guard each close: if one
+      // is already gone (e.g. during app shutdown) a throw must not skip the session wipe.
+      for (const view of [this.toolbar, this.content]) {
+        if (!view.webContents.isDestroyed()) view.webContents.close()
+      }
       void releaseSession(this.partition)
     })
   }

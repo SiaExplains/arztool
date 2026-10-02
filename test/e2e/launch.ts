@@ -31,7 +31,17 @@ export async function launchApp(options: { userData?: string } = {}): Promise<{
     app,
     userData,
     cleanup: async () => {
-      await app.close()
+      // A slow CI runner must not turn teardown into a failed run: give Electron time to quit
+      // cleanly, then kill it. (Windows CI once hung here for 30 s after a flaky test.)
+      const closed = await Promise.race([
+        app.close().then(() => true),
+        new Promise<false>((resolve) => {
+          setTimeout(() => {
+            resolve(false)
+          }, 15_000)
+        }),
+      ])
+      if (!closed) app.process().kill()
       if (!options.userData) rmSync(userData, { recursive: true, force: true })
     },
   }

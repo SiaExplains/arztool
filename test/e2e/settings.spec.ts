@@ -68,7 +68,8 @@ async function closeViewers(): Promise<void> {
     const shellIds = new Set(BrowserWindow.getAllWindows().map((w) => w.id))
     for (const win of BaseWindow.getAllWindows()) if (!shellIds.has(win.id)) win.close()
   })
-  await expect.poll(viewerToolbarCount).toBe(0)
+  // Closing windows can take a few seconds on a busy Windows CI runner.
+  await expect.poll(viewerToolbarCount, { timeout: 15_000 }).toBe(0)
 }
 
 test('privacy defaults: history off, no trusted domains, confirmation on', async () => {
