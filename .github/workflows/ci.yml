@@ -24,7 +24,7 @@ jobs:
       # Builds must succeed unsigned when signing secrets are absent (forks, PRs).
       CSC_IDENTITY_AUTO_DISCOVERY: 'false'
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - uses: pnpm/action-setup@v4
 
