@@ -18,6 +18,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   - the copied file is not an image (for example when several files were copied and the first
     one is a document).
 
+### Security
+
+- Copied file references that point to another computer (network shares) are ignored instead
+  of being opened, so pasting can never make Windows contact an untrusted server.
+
 ### Verified
 
 - Images copied from Preview, Photos (TIFF), as JPEG or HEIC data, PDF page data, Chrome's

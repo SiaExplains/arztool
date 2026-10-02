@@ -1,24 +1,31 @@
-import { fileURLToPath } from 'node:url'
 import { clipboard, type ClipboardItem } from 'electron'
 import { IpcChannel, type ReadClipboardImageResult } from '@shared/ipc/channels'
 import { findImageInHtml, MAX_CLIPBOARD_HTML } from '@shared/qr/html-image'
 import { MAX_INPUT_BYTES } from '@shared/qr/input-format'
+import { localPathFromFileUrl } from '../file-url'
 import { readInputFile } from '../input-file'
 import { handle } from './handle'
 
 /** Enough for any realistic multi-selection; we only need the first usable one. */
 const MAX_COPIED_FILES = 20
 
-/** Files copied in Finder / Explorer arrive as `text/uri-list`. */
+/**
+ * Files copied in Finder / Explorer arrive as `text/uri-list`. Returns null when
+ * no file was copied; otherwise the *local* paths (remote shares are dropped,
+ * see file-url.ts) — possibly none.
+ */
 async function copiedFilePaths(item: ClipboardItem): Promise<string[] | null> {
   if (!item.types.includes('text/uri-list')) return null
   const list = await (await item.getType('text/uri-list')).text()
-  return list
+  const fileUrls = list
     .split(/\r?\n/)
     .map((line) => line.trim())
     .filter((line) => line.startsWith('file:'))
+  if (fileUrls.length === 0) return null
+  return fileUrls
     .slice(0, MAX_COPIED_FILES)
-    .map((url) => fileURLToPath(url))
+    .map((url) => localPathFromFileUrl(url))
+    .filter((path): path is string => path !== null)
 }
 
 /**
@@ -37,7 +44,7 @@ async function readClipboardImage(): Promise<ReadClipboardImageResult> {
   if (!item) return { status: 'empty' }
 
   const paths = await copiedFilePaths(item)
-  if (paths && paths.length > 0) {
+  if (paths !== null) {
     for (const path of paths) {
       const result = await readInputFile(path)
       if (result.status === 'ok') return result

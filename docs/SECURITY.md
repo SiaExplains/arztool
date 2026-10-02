@@ -74,6 +74,10 @@ whose code lands with that milestone.
   values; inline `data:` images in raster formats are decoded locally, SVG is refused, and size
   is capped. Images that are only _linked_ (`https:`, `cid:`, `blob:`) are reported to the user
   and never fetched.
+- **Copied file references must be local.** `file://host/…` (and four-slash / `\\host` forms)
+  is refused before any filesystem call: on Windows, merely `stat()`-ing a UNC path can open an
+  SMB connection that leaks the user's NTLM hash (`main/file-url.ts`, unit-tested). The file
+  picker is unaffected — there the user chooses the path.
 - **Copied files go through the same path as the file picker** (`readInputFile`: size limit, magic
   byte sniffing, HEIC conversion). If files were copied but none is usable, nothing is decoded —
   in particular not Finder's file icon, which macOS puts on the clipboard alongside.
