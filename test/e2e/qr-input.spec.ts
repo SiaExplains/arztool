@@ -265,8 +265,10 @@ test.describe('paste from other apps', () => {
     })
   }
 
-  test('a text file and an image copied together: clear hint to copy just the image (macOS)', async () => {
-    // Electron 44 exposes only the first copied file on macOS, so the image is invisible here.
+  test('a text file and an image copied together: image decoded, or a clear hint (macOS)', async () => {
+    // Depends on the macOS version: some expose only the first copied file to Electron 44
+    // (the image is invisible → hint), others expose all (the image is found). Both are
+    // correct; "kein Bild" or a decoded Finder icon would not be.
     test.skip(process.platform !== 'darwin', 'macOS pasteboard types')
     const dir = mkdtempSync(join(tmpdir(), 'arztool-clip-'))
     const notes = join(dir, 'notes.txt')
@@ -276,7 +278,10 @@ test.describe('paste from other apps', () => {
       `pb.writeObjects($([$.NSURL.fileURLWithPath('${notes}'), $.NSURL.fileURLWithPath('${png}')]))`,
     )
     await pasteViaEditMenu()
-    await expect(page.getByRole('alert')).toContainText('kopieren Sie bitte nur das Bild')
+    const decoded = page.getByTestId('confirm-url')
+    const hint = page.getByRole('alert').filter({ hasText: 'kopieren Sie bitte nur das Bild' })
+    await expect(decoded.or(hint)).toBeVisible()
+    if (await decoded.isVisible()) await expect(decoded).toHaveText(url('http'))
     rmSync(dir, { recursive: true, force: true })
   })
 

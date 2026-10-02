@@ -4,6 +4,14 @@ All notable changes to Arztool are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.6.1] — 2026-10-02
+
+### Security
+
+- A popup is now opened in the viewer only if the part of the page that asked for it belongs to
+  the portal. Ads or other embedded third-party content on a portal page can no longer open
+  windows that share the doctor's logged-in session.
+
 ## [0.6.0] — 2026-10-02
 
 ### Added
