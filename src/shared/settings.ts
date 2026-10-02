@@ -18,6 +18,8 @@ export const SettingsSchema = z.object({
   skipConfirmForTrusted: z.boolean(),
   /** Opt-in: remember which domains were opened (domain + time only, never the URL). */
   historyEnabled: z.boolean(),
+  /** Opt-in: ask GitHub Releases for a newer version at start-up. Off until builds are signed. */
+  updateCheck: z.boolean(),
 })
 export type Settings = z.infer<typeof SettingsSchema>
 
@@ -26,6 +28,7 @@ export const DEFAULT_SETTINGS: Settings = {
   trustedDomains: [],
   skipConfirmForTrusted: false,
   historyEnabled: false,
+  updateCheck: false,
 }
 
 export type SettingsPatch = { [K in keyof Settings]?: Settings[K] | undefined }
@@ -35,6 +38,7 @@ export const SettingsPatchSchema = z.strictObject({
   trustedDomains: z.array(z.string().max(2048)).max(MAX_TRUSTED_DOMAINS).optional(),
   skipConfirmForTrusted: z.boolean().optional(),
   historyEnabled: z.boolean().optional(),
+  updateCheck: z.boolean().optional(),
 }) satisfies z.ZodType<SettingsPatch>
 
 /** Read whatever is on disk; anything unusable falls back field by field to defaults. */
@@ -52,6 +56,7 @@ export function parseStoredSettings(raw: unknown): Settings {
     trustedDomains: [...new Set(trustedDomains)],
     skipConfirmForTrusted: pick('skipConfirmForTrusted'),
     historyEnabled: pick('historyEnabled'),
+    updateCheck: pick('updateCheck'),
   }
 }
 
@@ -77,6 +82,7 @@ export function applySettingsPatch(current: Settings, patch: SettingsPatch): App
       trustedDomains,
       skipConfirmForTrusted: patch.skipConfirmForTrusted ?? current.skipConfirmForTrusted,
       historyEnabled: patch.historyEnabled ?? current.historyEnabled,
+      updateCheck: patch.updateCheck ?? current.updateCheck,
     },
   }
 }

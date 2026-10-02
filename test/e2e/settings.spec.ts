@@ -78,6 +78,27 @@ test('privacy defaults: history off, no trusted domains, confirmation on', async
   await expect(page.getByTestId('settings-trusted')).toContainText('Noch keine Domains hinterlegt.')
 })
 
+test('updates: off by default, no network in development, toggle persists', async () => {
+  const requests: string[] = []
+  page.on('request', (req) => {
+    if (!/^(app|data|blob):/.test(req.url())) requests.push(req.url())
+  })
+  await openSettings()
+  const toggle = page.getByRole('switch', { name: 'Beim Start nach Updates suchen' })
+  await expect(toggle).not.toBeChecked()
+  await expect(page.getByTestId('update-status')).toHaveText(
+    'Updates gibt es nur in der installierten App.',
+  )
+  await expect(page.getByRole('button', { name: 'Jetzt suchen' })).toHaveCount(0)
+  await toggle.check()
+  await expect(toggle).toBeChecked()
+  expect(JSON.parse(readFileSync(join(userData, 'settings.json'), 'utf8'))).toMatchObject({
+    updateCheck: true,
+  })
+  await toggle.uncheck()
+  expect(requests).toEqual([])
+})
+
 test('trusted domains: normalised on add, invalid input explained, removable', async () => {
   await openSettings()
   const field = page.getByRole('textbox', { name: 'Vertrauenswürdige Domains' })

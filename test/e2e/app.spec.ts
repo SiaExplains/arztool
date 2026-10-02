@@ -39,7 +39,7 @@ test('renderer is isolated from Node and only sees the typed bridge', async () =
   expect(globals).toEqual({
     require: 'undefined',
     process: 'undefined',
-    bridgeKeys: ['app', 'clipboard', 'files', 'history', 'menu', 'settings', 'viewer'],
+    bridgeKeys: ['app', 'clipboard', 'files', 'history', 'menu', 'settings', 'updates', 'viewer'],
   })
 })
 

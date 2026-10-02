@@ -1,0 +1,19 @@
+# Electron ships Chromium; security fixes must reach the app quickly
+# (Electron security checklist #16). Grouped, weekly, reviewed like any PR.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      electron:
+        patterns: ['electron', 'electron-builder', 'electron-updater', 'electron-vite']
+      dev-tooling:
+        dependency-type: development
+        exclude-patterns: ['electron', 'electron-builder', 'electron-vite']
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

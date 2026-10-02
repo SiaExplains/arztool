@@ -5,7 +5,8 @@
 The first tool opens a patient's imaging result (CT, MRI, X-ray) from the QR code on their
 printout or screenshot in a large, clean viewer window, instead of on a phone screen.
 
-> Status: early development (0.5.0 — paste from other apps; M5 next). See [CHANGELOG.md](CHANGELOG.md).
+> Status: 0.6.0 — feature-complete first tool; signing activates once certificates are set up
+> ([docs/RELEASING.md](docs/RELEASING.md)). See [CHANGELOG.md](CHANGELOG.md).
 
 ## Requirements
 
@@ -87,13 +88,22 @@ The HEIC fixture needs macOS (`sips`).
 - Pushing a tag `vX.Y.Z` (matching `package.json`) builds both platforms and uploads the
   installers to a **draft** GitHub Release for review.
 
+## Signing and releases
+
+Local and PR builds are ad-hoc signed (macOS) / unsigned (Windows) and need no secrets. Signed,
+notarized releases are produced by pushing a `vX.Y.Z` tag once the certificates are configured as
+GitHub secrets — see [docs/RELEASING.md](docs/RELEASING.md) for the one-time setup, the secrets
+list and how to verify signatures.
+
 ## Docs
 
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — process model, folders, how to add a tool
 - [docs/SECURITY.md](docs/SECURITY.md) — Electron security checklist, item by item
 - [docs/DECISIONS.md](docs/DECISIONS.md) — short decision log and future ideas
+- [docs/RELEASING.md](docs/RELEASING.md) — signing, notarization, releases, auto-update
 
 ## Privacy
 
 Arztool has no telemetry, no analytics and no accounts. The only network traffic is the portal
-URL a doctor explicitly opens and, once enabled, the update check against GitHub Releases.
+URL a doctor explicitly opens and — only if switched on in Settings — the update check against
+GitHub Releases.

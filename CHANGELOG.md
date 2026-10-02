@@ -4,6 +4,25 @@ All notable changes to Arztool are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.6.0] — 2026-10-02
+
+### Added
+
+- Updates (Settings → Updates, **off by default**): check GitHub for a newer Arztool, then
+  download and restart-to-install — each step only after a click. Only GitHub is contacted, and
+  no data about you or any result is sent. Unsigned builds explain that updates need a signed
+  version instead of failing silently.
+- Release builds can now be signed and notarized for macOS (Developer ID) and signed for Windows
+  (Azure Trusted Signing or an OV/EV certificate) once the certificates are set up. Without them,
+  builds work exactly as before.
+
+### Security
+
+- Files downloaded in the viewer are now marked as coming from the internet (macOS quarantine,
+  Windows "Mark of the Web"), so the operating system checks them before they are opened. The
+  portal address is not recorded in the mark.
+- Dependency updates for Electron and the build tools are proposed automatically every week.
+
 ## [0.5.0] — 2026-10-02
 
 ### Added

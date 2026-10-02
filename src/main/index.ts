@@ -4,10 +4,12 @@ import { registerAppIpc } from './ipc/app'
 import { registerClipboardIpc } from './ipc/clipboard'
 import { registerFileIpc } from './ipc/files'
 import { registerSettingsIpc } from './ipc/settings'
+import { registerUpdatesIpc } from './ipc/updates'
 import { registerViewerIpc } from './ipc/viewer'
 import { setMainLanguage } from './i18n'
 import { installAppMenu } from './menu'
 import { getSettings, onSettingsChanged } from './settings'
+import { initUpdates } from './updater'
 import { registerAppProtocol, registerAppSchemePrivileges } from './protocol'
 import { hardenSession, installGlobalGuards } from './security'
 import { createShellWindow, getShellWindow } from './windows/shell'
@@ -43,6 +45,7 @@ if (!app.requestSingleInstanceLock()) {
     registerClipboardIpc()
     registerViewerIpc()
     registerSettingsIpc()
+    registerUpdatesIpc()
 
     setMainLanguage(getSettings().language)
     installAppMenu()
@@ -52,6 +55,7 @@ if (!app.requestSingleInstanceLock()) {
       refreshAllViewers()
     })
     createShellWindow()
+    void initUpdates()
 
     app.on('activate', () => {
       if (BrowserWindow.getAllWindows().length === 0) createShellWindow()

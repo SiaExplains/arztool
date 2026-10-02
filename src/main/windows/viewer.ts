@@ -23,6 +23,7 @@ import { assessUrl, isSameSitePopup, isViewerNavigable } from '@shared/url-safet
 import { APP_ORIGIN } from '../app-protocol'
 import { t } from '../i18n'
 import { getSettings } from '../settings'
+import { markAsDownloaded } from '../download-mark'
 import { setNavigationPolicy } from '../security'
 import { loadBounds, saveBounds, type SavedBounds } from './window-state'
 
@@ -101,11 +102,14 @@ function prepareSession(partition: string): Session {
     }
     item.setSavePath(target)
     item.once('done', (_e, state) => {
-      viewer?.notify(
-        state === 'completed'
-          ? { kind: 'download-done', filename: basename(target) }
-          : { kind: 'download-failed', filename: basename(target) },
-      )
+      if (state !== 'completed') {
+        viewer?.notify({ kind: 'download-failed', filename: basename(target) })
+        return
+      }
+      // Mark before telling the user it is ready, so it is never opened unmarked.
+      void markAsDownloaded(target).then(() => {
+        viewer?.notify({ kind: 'download-done', filename: basename(target) })
+      })
     })
   })
 

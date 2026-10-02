@@ -163,6 +163,26 @@
       "clear": "Clear history",
       "domain": "Domain",
       "openedAt": "Opened"
+    },
+    "updates": {
+      "heading": "Updates",
+      "toggle": "Check for updates at start-up",
+      "hint": "Only asks GitHub whether a newer Arztool version was published – no data about you or any results. Downloading and installing happen only after you confirm.",
+      "check": "Check now",
+      "download": "Download version {{version}}",
+      "install": "Restart and install",
+      "status": {
+        "unsupported": "Updates are only available in the installed app.",
+        "idle": "Not checked yet.",
+        "checking": "Checking for updates …",
+        "upToDate": "Arztool is up to date (checked {{time}}).",
+        "available": "Version {{version}} is available.",
+        "downloading": "Downloading … {{percent}} %",
+        "downloaded": "Version {{version}} is ready.",
+        "errorNetwork": "Could not reach GitHub. Please try again later.",
+        "errorSignature": "This Arztool version is not signed. Automatic updates only work with signed versions – please install the new version manually.",
+        "errorOther": "The update check failed."
+      }
     }
   },
   "about": {

@@ -1,6 +1,6 @@
 import { useEffect, useId, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { HistoryEntryData, Language } from '@shared/ipc/channels'
+import type { HistoryEntryData, Language, UpdateState } from '@shared/ipc/channels'
 import { SUPPORTED_LANGUAGES } from '@shared/i18n'
 import { useSettings } from './settings-context'
 
@@ -241,6 +241,107 @@ function HistorySection() {
   )
 }
 
+function UpdatesSection() {
+  const { t, i18n } = useTranslation()
+  const { settings, update } = useSettings()
+  const [state, setState] = useState<UpdateState | null>(null)
+
+  useEffect(() => {
+    const unsubscribe = window.arztool.updates.onState(setState)
+    void window.arztool.updates.getState().then(setState)
+    return unsubscribe
+  }, [])
+
+  const time = (iso: string) =>
+    new Intl.DateTimeFormat(i18n.language, { timeStyle: 'short' }).format(new Date(iso))
+
+  const statusText = (s: UpdateState): string => {
+    switch (s.status) {
+      case 'unsupported':
+        return t('settings.updates.status.unsupported')
+      case 'idle':
+        return t('settings.updates.status.idle')
+      case 'checking':
+        return t('settings.updates.status.checking')
+      case 'up-to-date':
+        return t('settings.updates.status.upToDate', { time: time(s.checkedAt) })
+      case 'available':
+        return t('settings.updates.status.available', { version: s.version })
+      case 'downloading':
+        return t('settings.updates.status.downloading', { percent: s.percent })
+      case 'downloaded':
+        return t('settings.updates.status.downloaded', { version: s.version })
+      case 'error':
+        return s.kind === 'network'
+          ? t('settings.updates.status.errorNetwork')
+          : s.kind === 'signature'
+            ? t('settings.updates.status.errorSignature')
+            : t('settings.updates.status.errorOther')
+    }
+  }
+
+  const button = `${smallButton} border border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800`
+  const primary = `${smallButton} bg-teal-700 text-white hover:bg-teal-800`
+
+  return (
+    <Section title={t('settings.updates.heading')} testId="settings-updates">
+      <Toggle
+        label={t('settings.updates.toggle')}
+        hint={t('settings.updates.hint')}
+        checked={settings.updateCheck}
+        onChange={(next) => {
+          void update({ updateCheck: next })
+        }}
+      />
+      {state ? (
+        <p
+          data-testid="update-status"
+          role="status"
+          className="text-sm text-slate-600 dark:text-slate-400"
+        >
+          {statusText(state)}
+        </p>
+      ) : null}
+      {state && state.status !== 'unsupported' ? (
+        <div className="flex flex-wrap gap-2">
+          {state.status === 'available' ? (
+            <button
+              type="button"
+              className={primary}
+              onClick={() => {
+                void window.arztool.updates.download()
+              }}
+            >
+              {t('settings.updates.download', { version: state.version })}
+            </button>
+          ) : state.status === 'downloaded' ? (
+            <button
+              type="button"
+              className={primary}
+              onClick={() => {
+                void window.arztool.updates.install()
+              }}
+            >
+              {t('settings.updates.install')}
+            </button>
+          ) : (
+            <button
+              type="button"
+              className={button}
+              disabled={state.status === 'checking' || state.status === 'downloading'}
+              onClick={() => {
+                void window.arztool.updates.check()
+              }}
+            >
+              {t('settings.updates.check')}
+            </button>
+          )}
+        </div>
+      ) : null}
+    </Section>
+  )
+}
+
 export function SettingsPage() {
   const { t } = useTranslation()
   return (
@@ -249,6 +350,7 @@ export function SettingsPage() {
       <LanguageSection />
       <TrustedDomainsSection />
       <HistorySection />
+      <UpdatesSection />
     </div>
   )
 }
