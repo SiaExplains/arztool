@@ -156,7 +156,8 @@ Probing Electron 44 on macOS with the pasteboard types real apps write showed:
 - HTML-only selections (webmail, Outlook) carry the image as an inline `data:` URL or just a
   link. Inline images are now decoded; links are explained, never fetched (no network for
   decoding).
-- With several files copied, Electron exposes **only the first** — in the page _and_ in
+- With several files copied, Electron exposes **only the first** on some macOS versions (seen
+  locally; the CI runner's macOS exposed the image too and decoded it) — in the page _and_ in
   `clipboard.read()`, including raw pasteboard formats. "notes.txt + qr.png" therefore cannot
   find the image on macOS; the user is told to copy just the image. Main still tries every path
   it receives, which helps where the platform delivers the full list. Drops are unaffected: a
