@@ -200,6 +200,7 @@ describe('isPopupAllowed (opener frame)', () => {
   it('allows the portal page itself (referrer = portal URL)', () => {
     expect(
       isPopupAllowed({
+        homeUrl: portal,
         topUrl: portal,
         targetUrl: target,
         referrerUrl: portal,
@@ -211,6 +212,7 @@ describe('isPopupAllowed (opener frame)', () => {
   it('allows a same-site subframe (referrer = its origin)', () => {
     expect(
       isPopupAllowed({
+        homeUrl: portal,
         topUrl: portal,
         targetUrl: target,
         referrerUrl: 'https://viewer.radiologie-example.de/',
@@ -222,6 +224,7 @@ describe('isPopupAllowed (opener frame)', () => {
   it('denies a third-party iframe opening a same-site-as-portal window', () => {
     expect(
       isPopupAllowed({
+        homeUrl: portal,
         topUrl: portal,
         targetUrl: target,
         referrerUrl: `${ad}/`,
@@ -233,6 +236,7 @@ describe('isPopupAllowed (opener frame)', () => {
   it('denies when the caller hid its referrer and a foreign frame is present (ambiguous)', () => {
     expect(
       isPopupAllowed({
+        homeUrl: portal,
         topUrl: portal,
         targetUrl: target,
         referrerUrl: '',
@@ -244,6 +248,7 @@ describe('isPopupAllowed (opener frame)', () => {
   it('allows no-referrer portals when every frame is same-site', () => {
     expect(
       isPopupAllowed({
+        homeUrl: portal,
         topUrl: portal,
         targetUrl: target,
         referrerUrl: '',
@@ -259,6 +264,7 @@ describe('isPopupAllowed (opener frame)', () => {
   ])('treats an %s as foreign when the referrer is empty', (_label, origin) => {
     expect(
       isPopupAllowed({
+        homeUrl: portal,
         topUrl: portal,
         targetUrl: target,
         referrerUrl: '',
@@ -270,6 +276,7 @@ describe('isPopupAllowed (opener frame)', () => {
   it('still requires the target to be same-site with the portal page', () => {
     expect(
       isPopupAllowed({
+        homeUrl: portal,
         topUrl: portal,
         targetUrl: 'https://evil.com/',
         referrerUrl: portal,
@@ -281,10 +288,77 @@ describe('isPopupAllowed (opener frame)', () => {
   it('denies an https referrer from a different site even if the target matches the top page', () => {
     expect(
       isPopupAllowed({
+        homeUrl: portal,
         topUrl: portal,
         targetUrl: target,
         referrerUrl: 'https://klinik.github.io/',
         frameOrigins: [portalOrigin],
+      }),
+    ).toBe(false)
+  })
+})
+
+describe('isPopupAllowed (home site)', () => {
+  const home = 'https://portal.radiologie-example.de/befund?token=x'
+  const other = 'https://other-site.example.com/page'
+  const allSameSite = ['https://portal.radiologie-example.de']
+
+  it('allows popups while the viewer is still on its home portal', () => {
+    expect(
+      isPopupAllowed({
+        homeUrl: home,
+        topUrl: 'https://viewer.radiologie-example.de/study',
+        targetUrl: 'https://portal.radiologie-example.de/report',
+        referrerUrl: 'https://viewer.radiologie-example.de/study',
+        frameOrigins: allSameSite,
+      }),
+    ).toBe(true)
+  })
+
+  it("denies a navigated-to site's own popups — they would share the portal's session", () => {
+    expect(
+      isPopupAllowed({
+        homeUrl: home,
+        topUrl: other,
+        targetUrl: 'https://other-site.example.com/popup',
+        referrerUrl: other,
+        frameOrigins: ['https://other-site.example.com'],
+      }),
+    ).toBe(false)
+  })
+
+  it('denies a portal-URL popup requested from a page of another site', () => {
+    expect(
+      isPopupAllowed({
+        homeUrl: home,
+        topUrl: other,
+        targetUrl: 'https://portal.radiologie-example.de/report',
+        referrerUrl: other,
+        frameOrigins: ['https://other-site.example.com'],
+      }),
+    ).toBe(false)
+  })
+
+  it('allows again once the viewer is back on the portal', () => {
+    expect(
+      isPopupAllowed({
+        homeUrl: home,
+        topUrl: 'https://portal.radiologie-example.de/after-sso',
+        targetUrl: 'https://portal.radiologie-example.de/report',
+        referrerUrl: 'https://portal.radiologie-example.de/after-sso',
+        frameOrigins: allSameSite,
+      }),
+    ).toBe(true)
+  })
+
+  it('never routes popups for an http home (popups are https-only)', () => {
+    expect(
+      isPopupAllowed({
+        homeUrl: 'http://portal.radiologie-example.de/',
+        topUrl: 'https://portal.radiologie-example.de/',
+        targetUrl: 'https://portal.radiologie-example.de/report',
+        referrerUrl: 'https://portal.radiologie-example.de/',
+        frameOrigins: allSameSite,
       }),
     ).toBe(false)
   })

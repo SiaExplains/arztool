@@ -4,6 +4,14 @@ All notable changes to Arztool are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.6.2] — 2026-10-02
+
+### Security
+
+- Popups now only ever share the session of the portal the viewer was opened for. If the viewer
+  is sent to a different website, that website can no longer open windows that would share the
+  portal's login.
+
 ## [0.6.1] — 2026-10-02
 
 ### Security
