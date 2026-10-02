@@ -148,11 +148,14 @@ export class Viewer {
   private readonly toolbar: WebContentsView
   private readonly content: WebContentsView
   private readonly partition: string
+  /** The confirmed link this viewer (or the viewer that opened it) was opened for. Memory only. */
+  private readonly homeUrl: string
   private notice: ViewerNotice | null = null
   private closed = false
 
-  constructor(url: string, partition: string) {
+  constructor(url: string, partition: string, homeUrl: string) {
     this.partition = partition
+    this.homeUrl = homeUrl
     const ses = prepareSession(partition)
     const bounds = nextBounds()
     lastBounds = bounds
@@ -276,13 +279,14 @@ export class Viewer {
 
     contents.setWindowOpenHandler(({ url, referrer }) => {
       const allowed = isPopupAllowed({
+        homeUrl: this.homeUrl,
         topUrl: contents.getURL(),
         targetUrl: url,
         referrerUrl: referrer.url,
         frameOrigins: contents.mainFrame.framesInSubtree.map((frame) => frame.origin),
       })
       if (allowed) {
-        openViewerWindow(url, this.partition)
+        openViewerWindow(url, { partition: this.partition, homeUrl: this.homeUrl })
       } else {
         this.notify({ kind: 'popup-blocked', host: hostOf(url) })
       }
@@ -446,9 +450,16 @@ function shortcutCommand(input: Input): ViewerCommand | 'close' | null {
   }
 }
 
-/** Open a viewer window. `partition` is shared only with same-site popups of an existing viewer. */
-export function openViewerWindow(url: string, partition = `viewer-${randomUUID()}`): Viewer {
-  return new Viewer(url, partition)
+/**
+ * Open a viewer. A fresh viewer gets its own partition and is anchored to `url`;
+ * same-site popups pass their opener's partition and home so they share the
+ * login and stay anchored to the same portal.
+ */
+export function openViewerWindow(
+  url: string,
+  popupOf?: { partition: string; homeUrl: string },
+): Viewer {
+  return new Viewer(url, popupOf?.partition ?? `viewer-${randomUUID()}`, popupOf?.homeUrl ?? url)
 }
 
 /** Re-render every open viewer toolbar, e.g. after the language changed. */

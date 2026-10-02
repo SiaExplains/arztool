@@ -147,7 +147,13 @@ export function isSameSitePopup(openerUrl: string, targetUrl: string): boolean {
 }
 
 export interface PopupRequest {
-  /** URL of the portal page (the viewer's top frame). */
+  /**
+   * URL the viewer was opened for (the confirmed QR link). Popup viewers inherit
+   * their opener's. Anchors the session: it is the portal whose login the
+   * partition holds.
+   */
+  homeUrl: string
+  /** URL of the page the viewer shows now (its top frame). */
   topUrl: string
   /** URL the popup wants to open. */
   targetUrl: string
@@ -161,16 +167,20 @@ export interface PopupRequest {
 }
 
 /**
- * The popup must be same-site with the portal page *and* come from a same-site
- * frame — a third-party iframe on the portal (ad, widget, tracker) must not
- * open windows that share the portal's logged-in session.
+ * The popup must be same-site with the portal the viewer was opened for, the
+ * viewer must still be on that portal, and the request must come from a
+ * same-site frame — a third-party iframe on the portal (ad, widget, tracker)
+ * must not open windows that share the portal's logged-in session, and neither
+ * may a different site the viewer was navigated to.
  *
  * The caller is identified by its referrer. When that is empty (no-referrer
  * policy — which an attacking iframe can set on itself), the caller is unknown,
  * so the popup is allowed only if *no* frame on the page is from another site.
  */
 export function isPopupAllowed(request: PopupRequest): boolean {
-  const { topUrl, targetUrl, referrerUrl, frameOrigins } = request
+  const { homeUrl, topUrl, targetUrl, referrerUrl, frameOrigins } = request
+  // Still on the home portal, and the popup stays on it too.
+  if (!isSameSitePopup(homeUrl, topUrl) || !isSameSitePopup(homeUrl, targetUrl)) return false
   if (!isSameSitePopup(topUrl, targetUrl)) return false
 
   if (referrerUrl !== '') return isSameSitePopup(referrerUrl, targetUrl)

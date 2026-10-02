@@ -196,6 +196,15 @@ ambiguous — an attacking iframe can set it on itself — so it is allowed only
 `WebFrameMain.origin` is same-site; opaque (`"null"`) origins count as foreign. Trade-off: a
 no-referrer portal that also embeds a third-party iframe loses its popups (notice shown).
 
+## 028 — Popups are anchored to the portal the viewer was opened for (2026-10-02)
+
+Follow-up from the 0.6.1 review. The viewer may navigate to any http(s) page (links, SSO,
+redirects), and popup routing used the _current_ page. A viewer sent to another site would then
+route that site's same-site popups into viewers sharing the portal's partition. Each viewer now
+keeps its `homeUrl` in memory (the confirmed QR link; popup viewers inherit their opener's), and
+`isPopupAllowed` requires both the current page and the target to be same-site with it. Trade-off:
+while the viewer is on another site (e.g. an SSO provider) its popups are blocked with a notice.
+
 ## Future ideas (out of scope for now)
 
 - Webcam QR scanning.

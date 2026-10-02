@@ -169,3 +169,33 @@ test('a no-referrer portal *with* a foreign frame: ambiguous caller, blocked', a
   await openPopup('/portal?top=no-referrer&frame=', 'top')
   await expectBlocked()
 })
+
+test("after navigating to another site, that site's popups do not get the portal's session", async () => {
+  await shell.evaluate((url) => window.arztool.viewer.open(url), `${portal}/portal`)
+  await expect.poll(toolbarCount).toBe(1)
+  const findContent = (origin: string) =>
+    app.evaluate(({ webContents }, o) => {
+      return webContents.getAllWebContents().some((w) => w.getURL().startsWith(o))
+    }, origin)
+  await expect.poll(() => findContent(portal)).toBe(true)
+
+  // The portal page sends the viewer to another site (a link, a redirect, a framebuster…).
+  await app.evaluate(
+    async ({ webContents }, { from, to }) => {
+      const wc = webContents.getAllWebContents().find((w) => w.getURL().startsWith(from))
+      await wc?.mainFrame.executeJavaScript(`location.href = ${JSON.stringify(to)}; true`, true)
+    },
+    { from: portal, to: `${thirdParty}/portal` },
+  )
+  await expect.poll(() => findContent(thirdParty)).toBe(true)
+
+  // That site now opens a popup on itself — same-site with *itself*, but not with the portal.
+  await app.evaluate(
+    async ({ webContents }, { origin, target }) => {
+      const wc = webContents.getAllWebContents().find((w) => w.getURL().startsWith(origin))
+      await wc?.mainFrame.executeJavaScript(`window.open(${JSON.stringify(target)}); true`, true)
+    },
+    { origin: thirdParty, target: `${thirdParty}/report` },
+  )
+  await expectBlocked()
+})
