@@ -4,6 +4,13 @@ All notable changes to Arztool are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.6.4] — 2026-10-02
+
+### Changed
+
+- Documentation only, no change to the app: a contributor guide (`CLAUDE.md`) and updated
+  README and architecture notes (current status, popup rules, download marking).
+
 ## [0.6.3] — 2026-10-02
 
 ### Changed

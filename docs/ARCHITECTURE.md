@@ -12,11 +12,12 @@
 └───────────────▲─────────────────────────────────────────────┘
                 │ ipcRenderer.invoke (channels from shared/ipc)
 ┌───────────────┴──── preload (sandboxed) ────────────────────┐
-│ shell.ts      contextBridge → window.arztool (typed, narrow)│
+│ shell.ts      contextBridge → window.arztool (shell role) or │
+│               window.arztoolViewer (viewer-toolbar role)    │
 └───────────────▲─────────────────────────────────────────────┘
                 │
 ┌───────────────┴──── renderer (React, sandboxed) ────────────┐
-│ shell/        frame, navigation, (settings, about — M4)     │
+│ shell/        frame, navigation, settings, about            │
 │ tools/        one folder per tool + registry.ts             │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -85,10 +86,16 @@ main ──viewer:state──▶ toolbar (URL, domain, history, zoom, notices)
 - **One preload, two roles.** Sandboxed preloads cannot load shared chunks, so `preload/shell.ts`
   exposes `window.arztool` or `window.arztoolViewer` depending on `--arztool-role=` passed via
   `additionalArguments`.
-- **Sessions.** Each viewer gets `session.fromPartition('viewer-<uuid>', { cache: false })`. A
-  same-site https popup opens a new viewer on the _same_ partition (login survives); a
-  reference count wipes storage, cache, auth cache and connections when the last window closes.
+- **Sessions.** Each viewer gets `session.fromPartition('viewer-<uuid>', { cache: false })` and
+  remembers its **home URL** in memory (the confirmed link). A reference count wipes storage,
+  cache, auth cache and connections when the last window of a partition closes.
+- **Popups** (`isPopupAllowed` in `shared/url-safety.ts`) open a new viewer on the _same_
+  partition (login survives) only if the viewer is still on its home portal, the target stays
+  on it, and the **calling frame** is same-site too (via the referrer Chromium derives from it;
+  with no referrer, only if no frame on the page is foreign). Popup viewers inherit the home.
+  Everything else is denied with a toolbar notice. DECISIONS 007, 027, 028.
 - **Downloads** call `dialog.showSaveDialogSync` inside `will-download`; cancel → `item.cancel()`.
+  Completed files are marked as from the internet (`main/download-mark.ts`, DECISIONS 026).
 - **Shortcuts** are handled in `before-input-event` on both views, so they work whichever view
   has focus and never reach the portal's own key handlers.
 
