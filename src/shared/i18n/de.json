@@ -51,7 +51,9 @@
         "unsupportedFormat": "Dieses Dateiformat wird nicht unterstützt.",
         "decodeFailed": "Das Bild konnte nicht verarbeitet werden.",
         "pdfFailed": "Das PDF konnte nicht geöffnet werden.",
-        "clipboardEmpty": "In der Zwischenablage ist kein Bild."
+        "clipboardEmpty": "In der Zwischenablage ist kein Bild.",
+        "clipboardReferenceOnly": "Das kopierte Bild ist nur ein Verweis auf eine Internetseite – Arztool lädt dafür nichts aus dem Netz. Bitte das Bild selbst kopieren (Rechtsklick → „Bild kopieren“) oder einen Screenshot einfügen.",
+        "clipboardNoImageFile": "Die kopierte Datei ist kein Bild und kein PDF. Wenn Sie mehrere Dateien kopiert haben, kopieren Sie bitte nur das Bild mit dem QR-Code."
       },
       "none": {
         "title": "Kein QR-Code gefunden",
