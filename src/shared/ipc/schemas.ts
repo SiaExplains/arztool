@@ -33,4 +33,8 @@ export const IpcRequestSchemas = {
   [IpcChannel.SettingsUpdate]: SettingsPatchSchema,
   [IpcChannel.HistoryList]: z.undefined(),
   [IpcChannel.HistoryClear]: z.undefined(),
+  [IpcChannel.UpdatesGetState]: z.undefined(),
+  [IpcChannel.UpdatesCheck]: z.undefined(),
+  [IpcChannel.UpdatesDownload]: z.undefined(),
+  [IpcChannel.UpdatesInstall]: z.undefined(),
 } as const satisfies { [C in keyof IpcContract]: z.ZodType<IpcContract[C]['request']> }

@@ -15,7 +15,7 @@ export default tseslint.config(
     languageOptions: {
       parserOptions: {
         projectService: {
-          allowDefaultProject: ['eslint.config.mjs'],
+          allowDefaultProject: ['eslint.config.mjs', 'electron-builder.cjs', 'build/*.cjs'],
         },
         tsconfigRootDir: import.meta.dirname,
       },
@@ -60,6 +60,15 @@ export default tseslint.config(
   {
     files: ['eslint.config.mjs'],
     ...tseslint.configs.disableTypeChecked,
+  },
+  {
+    files: ['**/*.cjs'],
+    ...tseslint.configs.disableTypeChecked,
+    languageOptions: { globals: globals.node, sourceType: 'commonjs' },
+    rules: {
+      ...tseslint.configs.disableTypeChecked.rules,
+      '@typescript-eslint/no-require-imports': 'off',
+    },
   },
   prettier,
 )

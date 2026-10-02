@@ -78,6 +78,27 @@ test('privacy defaults: history off, no trusted domains, confirmation on', async
   await expect(page.getByTestId('settings-trusted')).toContainText('Noch keine Domains hinterlegt.')
 })
 
+test('updates: off by default, no network in development, toggle persists', async () => {
+  const requests: string[] = []
+  page.on('request', (req) => {
+    if (!/^(app|data|blob):/.test(req.url())) requests.push(req.url())
+  })
+  await openSettings()
+  const toggle = page.getByRole('switch', { name: 'Beim Start nach Updates suchen' })
+  await expect(toggle).not.toBeChecked()
+  await expect(page.getByTestId('update-status')).toHaveText(
+    'Updates gibt es nur in der installierten App.',
+  )
+  await expect(page.getByRole('button', { name: 'Jetzt suchen' })).toHaveCount(0)
+  await toggle.check()
+  await expect(toggle).toBeChecked()
+  expect(JSON.parse(readFileSync(join(userData, 'settings.json'), 'utf8'))).toMatchObject({
+    updateCheck: true,
+  })
+  await toggle.uncheck()
+  expect(requests).toEqual([])
+})
+
 test('trusted domains: normalised on add, invalid input explained, removable', async () => {
   await openSettings()
   const field = page.getByRole('textbox', { name: 'Vertrauenswürdige Domains' })
@@ -249,4 +270,27 @@ test('a decoded result survives a visit to Settings', async () => {
   await expect(page.getByTestId('qr-text')).toBeHidden()
   await page.getByRole('button', { name: /^(QR-Befund öffnen|Open QR result)$/ }).click()
   await expect(page.getByTestId('qr-text')).toBeVisible()
+})
+
+test('every toggle reacts instantly even when saving is slow (as on CI Windows)', async () => {
+  // Wrap the real handler with a delay. `_invokeHandlers` is Electron-internal; acceptable in a test.
+  await app.evaluate(({ ipcMain }) => {
+    const handlers = (
+      ipcMain as unknown as { _invokeHandlers: Map<string, (...a: unknown[]) => unknown> }
+    )._invokeHandlers
+    const original = handlers.get('settings:update')
+    if (!original) throw new Error('settings:update handler missing')
+    ipcMain.removeHandler('settings:update')
+    ipcMain.handle('settings:update', async (event, patch) => {
+      await new Promise((resolve) => setTimeout(resolve, 400))
+      return original(event, patch)
+    })
+  })
+  await openSettings()
+  for (const toggle of await page.getByRole('switch').all()) {
+    const before = await toggle.isChecked()
+    await toggle.click()
+    expect(await toggle.isChecked(), (await toggle.getAttribute('id')) ?? 'switch').toBe(!before)
+    await toggle.click() // restore
+  }
 })

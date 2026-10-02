@@ -163,6 +163,26 @@
       "clear": "Verlauf löschen",
       "domain": "Domain",
       "openedAt": "Geöffnet"
+    },
+    "updates": {
+      "heading": "Updates",
+      "toggle": "Beim Start nach Updates suchen",
+      "hint": "Fragt nur bei GitHub nach, ob eine neuere Arztool-Version veröffentlicht wurde – ohne Daten über Sie oder Befunde. Heruntergeladen und installiert wird nur nach Ihrer Bestätigung.",
+      "check": "Jetzt suchen",
+      "download": "Version {{version}} herunterladen",
+      "install": "Neu starten und installieren",
+      "status": {
+        "unsupported": "Updates gibt es nur in der installierten App.",
+        "idle": "Noch nicht gesucht.",
+        "checking": "Suche nach Updates …",
+        "upToDate": "Arztool ist aktuell (geprüft {{time}}).",
+        "available": "Version {{version}} ist verfügbar.",
+        "downloading": "Wird heruntergeladen … {{percent}} %",
+        "downloaded": "Version {{version}} ist bereit.",
+        "errorNetwork": "Keine Verbindung zu GitHub. Bitte später erneut versuchen.",
+        "errorSignature": "Diese Arztool-Version ist nicht signiert. Automatische Updates funktionieren erst mit signierten Versionen – bitte die neue Version manuell installieren.",
+        "errorOther": "Die Update-Prüfung ist fehlgeschlagen."
+      }
     }
   },
   "about": {

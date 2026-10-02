@@ -26,7 +26,7 @@ whose code lands with that milestone.
 | 13  | Disable or limit navigation                            | Global `will-navigate`, `will-frame-navigate` and `will-redirect` guards. App windows cannot navigate at all; the viewer's portal view may only navigate to http/https. E2E covers both.                                                                                                                |
 | 14  | Disable or limit creation of new windows               | Global `setWindowOpenHandler` returns `deny`. The viewer routes an https popup on the same registrable domain (PSL incl. private suffixes, so `a.github.io` ≠ `b.github.io`) into a new viewer on the same partition; everything else is denied with a notice. Unit- and E2E-tested.                    |
 | 15  | Do not use `shell.openExternal` with untrusted content | Only the viewer's "open in default browser" button, only for the current http/https URL, and only on a user click.                                                                                                                                                                                      |
-| 16  | Use a current version of Electron                      | Electron 44.5 (latest stable at bootstrap). Dependabot/Renovate is a follow-up.                                                                                                                                                                                                                         |
+| 16  | Use a current version of Electron                      | Electron 44 (latest stable at bootstrap). Dependabot proposes Electron, electron-builder, electron-updater and electron-vite updates weekly as one grouped PR (`.github/dependabot.yml`).                                                                                                               |
 | 17  | Validate the `sender` of all IPC messages              | `main/ipc/handle.ts` rejects any frame whose URL is not `app://arztool` (or the dev server in development).                                                                                                                                                                                             |
 | 18  | Avoid `file://`, prefer custom protocols               | Production UI is served from `app://arztool/` via `protocol.handle`, with path-traversal rejection (unit-tested). The protocol is registered on the default session only, so portal partitions cannot reach it.                                                                                         |
 | 19  | Check which fuses you can change                       | electron-builder `electronFuses`: RunAsNode off, NODE_OPTIONS off, `--inspect` off, cookie encryption on, embedded asar integrity validation on, only-load-from-asar on, file:// extra privileges off.                                                                                                  |
@@ -82,11 +82,25 @@ whose code lands with that milestone.
   byte sniffing, HEIC conversion). If files were copied but none is usable, nothing is decoded —
   in particular not Finder's file icon, which macOS puts on the clipboard alongside.
 
+## Downloads and updates (M5)
+
+- **Downloads are marked as coming from the internet** after they complete: macOS
+  `com.apple.quarantine` (via `/usr/bin/xattr`, no shell) and the Windows `Zone.Identifier`
+  stream with `ZoneId=3`. Electron did not set either on its own (verified). The portal URL is not
+  written into the mark. E2E checks the mark on both platforms.
+- **Updates are opt-in.** electron-updater talks only to this repository's GitHub Releases, only
+  after the user enabled the check or clicked "check now", never downloads or installs without a
+  click (`autoDownload` and `autoInstallOnAppQuit` off, no prereleases), and logs nothing to disk.
+  Update packages are verified by electron-updater (SHA-512 from `latest*.yml`; on Windows the
+  publisher of a signed installer).
+- **Code signing** is configured from secrets only (`build/signing.cjs`, `docs/RELEASING.md`).
+  Signed macOS builds use the hardened runtime with only `allow-jit`.
+
 ## Privacy
 
 - No telemetry, analytics, crash reporting or accounts.
-- Network traffic is limited to the portal URL the doctor explicitly opens and, once enabled, the
-  update check against GitHub Releases (M5).
+- Network traffic is limited to the portal URL the doctor explicitly opens and, only if switched on,
+  the update check against GitHub Releases.
 - Viewer sessions use a fresh in-memory partition per window (no `persist:`, `cache: false`) and
   are wiped on close: storage, cache, auth cache, host cache, open connections. E2E asserts the
   portal's cookie is gone after closing.

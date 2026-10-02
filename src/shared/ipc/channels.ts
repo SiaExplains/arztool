@@ -16,6 +16,10 @@ export const IpcChannel = {
   SettingsUpdate: 'settings:update',
   HistoryList: 'history:list',
   HistoryClear: 'history:clear',
+  UpdatesGetState: 'updates:get-state',
+  UpdatesCheck: 'updates:check',
+  UpdatesDownload: 'updates:download',
+  UpdatesInstall: 'updates:install',
 } as const
 
 export type IpcChannel = (typeof IpcChannel)[keyof typeof IpcChannel]
@@ -26,6 +30,7 @@ export const IpcEvent = {
   ViewerState: 'viewer:state',
   MenuOpenSettings: 'menu:open-settings',
   MenuOpenAbout: 'menu:open-about',
+  UpdatesState: 'updates:state',
 } as const
 
 /** Which preload API a window gets; passed via `additionalArguments`. */
@@ -49,7 +54,19 @@ export interface SettingsData {
   trustedDomains: string[]
   skipConfirmForTrusted: boolean
   historyEnabled: boolean
+  updateCheck: boolean
 }
+
+export type UpdateErrorKind = 'network' | 'signature' | 'other'
+export type UpdateState =
+  | { status: 'unsupported' }
+  | { status: 'idle' }
+  | { status: 'checking' }
+  | { status: 'up-to-date'; checkedAt: string }
+  | { status: 'available'; version: string }
+  | { status: 'downloading'; percent: number }
+  | { status: 'downloaded'; version: string }
+  | { status: 'error'; kind: UpdateErrorKind }
 export type SettingsPatchData = { [K in keyof SettingsData]?: SettingsData[K] | undefined }
 export type SettingsUpdateResult =
   { status: 'ok'; settings: SettingsData } | { status: 'invalid-domains'; invalidDomains: string[] }
@@ -137,6 +154,10 @@ export interface IpcContract {
   [IpcChannel.SettingsUpdate]: { request: SettingsPatchData; response: SettingsUpdateResult }
   [IpcChannel.HistoryList]: { request: undefined; response: HistoryEntryData[] }
   [IpcChannel.HistoryClear]: { request: undefined; response: undefined }
+  [IpcChannel.UpdatesGetState]: { request: undefined; response: UpdateState }
+  [IpcChannel.UpdatesCheck]: { request: undefined; response: UpdateState }
+  [IpcChannel.UpdatesDownload]: { request: undefined; response: UpdateState }
+  [IpcChannel.UpdatesInstall]: { request: undefined; response: UpdateState }
 }
 
 /** The API the shell preload exposes on `window.arztool`. */
@@ -165,6 +186,14 @@ export interface ArztoolApi {
   history: {
     list(): Promise<HistoryEntryData[]>
     clear(): Promise<void>
+  }
+  updates: {
+    getState(): Promise<UpdateState>
+    check(): Promise<UpdateState>
+    download(): Promise<UpdateState>
+    install(): Promise<UpdateState>
+    /** Returns an unsubscribe function. */
+    onState(listener: (state: UpdateState) => void): () => void
   }
   viewer: {
     open(url: string): Promise<ViewerOpenResult>

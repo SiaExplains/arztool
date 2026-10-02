@@ -16,13 +16,12 @@ export function SettingsProvider({
   const update = useCallback(async (patch: SettingsPatchData) => {
     // Toggles and language react instantly; trusted domains wait for main,
     // which normalises them. A failed save rolls back to the last saved state.
+    // Generic on purpose: a hand-written field list silently missed `updateCheck`.
     if (patch.trustedDomains === undefined) {
-      const optimistic = { ...confirmed.current }
-      if (patch.language !== undefined) optimistic.language = patch.language
-      if (patch.historyEnabled !== undefined) optimistic.historyEnabled = patch.historyEnabled
-      if (patch.skipConfirmForTrusted !== undefined) {
-        optimistic.skipConfirmForTrusted = patch.skipConfirmForTrusted
-      }
+      const defined = Object.fromEntries(
+        Object.entries(patch).filter(([, value]) => value !== undefined),
+      ) as Partial<SettingsData>
+      const optimistic: SettingsData = { ...confirmed.current, ...defined }
       setSettings(optimistic)
       setLanguage(optimistic.language)
     }

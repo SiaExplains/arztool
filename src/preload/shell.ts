@@ -5,6 +5,7 @@ import {
   PRELOAD_ROLE_ARG,
   type ArztoolApi,
   type PreloadRole,
+  type UpdateState,
   type ViewerState,
   type ViewerToolbarApi,
 } from '@shared/ipc/channels'
@@ -74,6 +75,16 @@ if (role === 'viewer-toolbar') {
     history: {
       list: () => ipcRenderer.invoke(IpcChannel.HistoryList),
       clear: () => ipcRenderer.invoke(IpcChannel.HistoryClear),
+    },
+    updates: {
+      getState: () => ipcRenderer.invoke(IpcChannel.UpdatesGetState),
+      check: () => ipcRenderer.invoke(IpcChannel.UpdatesCheck),
+      download: () => ipcRenderer.invoke(IpcChannel.UpdatesDownload),
+      install: () => ipcRenderer.invoke(IpcChannel.UpdatesInstall),
+      onState: (listener) =>
+        subscribe(IpcEvent.UpdatesState, (state) => {
+          listener(state as UpdateState)
+        }),
     },
     viewer: {
       open: (url) => ipcRenderer.invoke(IpcChannel.ViewerOpen, { url }),

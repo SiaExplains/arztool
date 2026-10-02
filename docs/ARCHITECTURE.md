@@ -92,6 +92,17 @@ main ──viewer:state──▶ toolbar (URL, domain, history, zoom, notices)
 - **Shortcuts** are handled in `before-input-event` on both views, so they work whichever view
   has focus and never reach the portal's own key handlers.
 
+## Updates
+
+```
+Settings → Updates ──updates:check/download/install──▶ main: UpdateController
+                                                           │ (state machine, unit-tested)
+                                                           ▼
+                                             electron-updater (packaged builds only)
+                                                           │ GitHub Releases metadata
+main ──updates:state──▶ shell (status line + the one button that makes sense next)
+```
+
 ## Internationalisation
 
 German (`shared/i18n/de.json`) is the source catalogue and the default language; keys are
@@ -102,4 +113,5 @@ placeholders differ between catalogues.
 
 electron-vite builds three targets into `out/`: `main/index.js`, `preload/shell.js` (CommonJS,
 all dependencies inlined — sandboxed preloads may only `require('electron')`), and `renderer/`.
-electron-builder packages `out/` into an asar with hardened Electron fuses.
+electron-builder (`electron-builder.cjs`) packages `out/` into an asar with hardened Electron
+fuses; `build/signing.cjs` decides signing from the environment (see RELEASING.md).

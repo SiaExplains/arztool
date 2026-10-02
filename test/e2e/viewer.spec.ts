@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process'
 import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { createServer, type Server } from 'node:http'
 import type { AddressInfo } from 'node:net'
@@ -268,6 +269,16 @@ test.describe('viewer window', () => {
       '„gespeichert.pdf“ gespeichert',
     )
     expect(readFileSync(target, 'utf8')).toBe('%PDF-1.4 test')
+    // Marked as coming from the internet, without recording the (token-bearing) URL.
+    if (process.platform === 'darwin') {
+      const mark = execFileSync('xattr', ['-p', 'com.apple.quarantine', target]).toString()
+      expect(mark).toMatch(/^0081;[0-9a-f]+;Arztool;/)
+      expect(mark).not.toContain('127.0.0.1')
+    } else if (process.platform === 'win32') {
+      expect(readFileSync(`${target}:Zone.Identifier`, 'utf8')).toBe(
+        '[ZoneTransfer]\r\nZoneId=3\r\n',
+      )
+    }
 
     await app.evaluate(({ dialog }) => {
       dialog.showSaveDialogSync = (() => undefined) as unknown as typeof dialog.showSaveDialogSync

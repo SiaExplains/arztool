@@ -162,10 +162,34 @@ Probing Electron 44 on macOS with the pasteboard types real apps write showed:
   it receives, which helps where the platform delivers the full list. Drops are unaffected: a
   drop carries all files and the first image/PDF is used.
 
+## 024 — Signing decided by environment, never by default (2026-10-02)
+
+`electron-builder.cjs` replaces the YAML config so `build/signing.cjs` can choose signing from
+secrets. Only the release workflow opts in (`ARZTOOL_SIGN=1`); without it, or with incomplete
+secrets, builds stay ad-hoc/unsigned and log a warning. Local builds can never accidentally pick
+up a developer's keychain identity. Notarization prefers an App Store Connect API key over an
+Apple ID password. Windows prefers Azure Trusted Signing (no hardware token, works on hosted
+runners) over OV/EV certificates.
+
+## 025 — Updates: opt-in, three explicit steps (2026-10-02)
+
+The spec allows the update check as the one extra network call. It stays **off by default** until
+releases are signed (unsigned macOS builds cannot install updates anyway), and each step —
+check, download, restart-to-install — needs a click, so a doctor is never interrupted mid-consult.
+The flow is a small state machine (`main/updater/controller.ts`) unit-tested against a fake
+updater; the real electron-updater satisfies its interface structurally.
+
+## 026 — Mark downloads ourselves (2026-10-02)
+
+Checked during M5: Electron writes neither the macOS quarantine attribute nor the Windows Mark of
+the Web on downloads. Portals may serve ZIPs or executables, so main adds both after a completed
+download — without the source URL, which carries access tokens.
+
 ## Future ideas (out of scope for now)
 
 - Webcam QR scanning.
 - Built-in DICOM viewer for downloaded studies.
 - Web or mobile versions.
 - Any cloud backend or user accounts.
-- Dependabot/Renovate for Electron security updates.
+- Popup routing: check the opening _frame_ rather than the top page (M3 security note).
+- Switch the update check on by default once releases are signed (DECISIONS 025).
