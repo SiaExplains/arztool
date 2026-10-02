@@ -72,7 +72,9 @@ test.beforeAll(async () => {
       }
     },
   )
-  await new Promise<void>((done) => server.listen(0, '127.0.0.1', done))
+  // Dual-stack: on CI runners "localhost" resolves to ::1 first, so an IPv4-only
+  // server would leave the third-party iframe unloaded.
+  await new Promise<void>((done) => server.listen({ port: 0, host: '::', ipv6Only: false }, done))
   const port = String((server.address() as AddressInfo).port)
   portal = `https://127.0.0.1:${port}`
   thirdParty = `https://localhost:${port}`
@@ -111,14 +113,17 @@ function toolbarCount(): number {
 async function openPopup(portalPath: string, from: 'top' | 'iframe'): Promise<void> {
   await shell.evaluate((url) => window.arztool.viewer.open(url), `${portal}${portalPath}`)
   await expect.poll(toolbarCount).toBe(1)
+  // Every frame must have really loaded — a failed iframe is an error page that
+  // never calls window.open, which would make "blocked" tests pass or fail for the wrong reason.
+  const expectedOrigins = portalPath.includes('frame=') ? [portal, thirdParty] : [portal]
   await expect
     .poll(() =>
       app.evaluate(({ webContents }, origin) => {
         const wc = webContents.getAllWebContents().find((w) => w.getURL().startsWith(origin))
-        return wc ? wc.mainFrame.framesInSubtree.length : 0
+        return wc ? wc.mainFrame.framesInSubtree.map((f) => f.origin).sort() : []
       }, portal),
     )
-    .toBeGreaterThan(portalPath.includes('frame=') ? 1 : 0)
+    .toEqual(expectedOrigins.sort())
 
   await app.evaluate(
     async ({ webContents }, { origin, target, from }) => {
