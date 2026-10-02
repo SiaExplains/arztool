@@ -450,7 +450,6 @@ function shortcutCommand(input: Input): ViewerCommand | 'close' | null {
   }
 }
 
-/** Open a viewer window. `partition` is shared only with same-site popups of an existing viewer. */
 /**
  * Open a viewer. A fresh viewer gets its own partition and is anchored to `url`;
  * same-site popups pass their opener's partition and home so they share the
