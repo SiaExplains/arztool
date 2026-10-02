@@ -16,6 +16,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   (Azure Trusted Signing or an OV/EV certificate) once the certificates are set up. Without them,
   builds work exactly as before.
 
+### Fixed
+
+- Settings switches now react instantly even on slower computers (the new updates switch could
+  lag behind the click).
+
 ### Security
 
 - Files downloaded in the viewer are now marked as coming from the internet (macOS quarantine,

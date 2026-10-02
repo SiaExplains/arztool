@@ -271,3 +271,26 @@ test('a decoded result survives a visit to Settings', async () => {
   await page.getByRole('button', { name: /^(QR-Befund öffnen|Open QR result)$/ }).click()
   await expect(page.getByTestId('qr-text')).toBeVisible()
 })
+
+test('every toggle reacts instantly even when saving is slow (as on CI Windows)', async () => {
+  // Wrap the real handler with a delay. `_invokeHandlers` is Electron-internal; acceptable in a test.
+  await app.evaluate(({ ipcMain }) => {
+    const handlers = (
+      ipcMain as unknown as { _invokeHandlers: Map<string, (...a: unknown[]) => unknown> }
+    )._invokeHandlers
+    const original = handlers.get('settings:update')
+    if (!original) throw new Error('settings:update handler missing')
+    ipcMain.removeHandler('settings:update')
+    ipcMain.handle('settings:update', async (event, patch) => {
+      await new Promise((resolve) => setTimeout(resolve, 400))
+      return original(event, patch)
+    })
+  })
+  await openSettings()
+  for (const toggle of await page.getByRole('switch').all()) {
+    const before = await toggle.isChecked()
+    await toggle.click()
+    expect(await toggle.isChecked(), (await toggle.getAttribute('id')) ?? 'switch').toBe(!before)
+    await toggle.click() // restore
+  }
+})
