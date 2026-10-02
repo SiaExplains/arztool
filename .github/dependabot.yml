@@ -7,12 +7,31 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    # Groups take minor/patch only. Major updates arrive one per PR, so a single
+    # incompatible major cannot block every other update in its group (as in #11).
     groups:
       electron:
         patterns: ['electron', 'electron-builder', 'electron-updater', 'electron-vite']
+        update-types: ['minor', 'patch']
       dev-tooling:
         dependency-type: development
         exclude-patterns: ['electron', 'electron-builder', 'electron-vite']
+        update-types: ['minor', 'patch']
+    # Version pins forced by peer ranges — docs/DECISIONS.md 002 and 029.
+    # Remove an entry once its blocker is gone (re-check: `npm view <pkg> peerDependencies`).
+    ignore:
+      # electron-vite 5 supports vite ^5 || ^6 || ^7.
+      - dependency-name: vite
+        update-types: ['version-update:semver-major']
+      # plugin-react 6 requires vite 8.
+      - dependency-name: '@vitejs/plugin-react'
+        update-types: ['version-update:semver-major']
+      # typescript-eslint 8 supports typescript <6.1.
+      - dependency-name: typescript
+        versions: ['>=6.1.0']
+      # Must match the Node.js major bundled with Electron (44 → Node 24), not the latest Node.
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major']
   - package-ecosystem: github-actions
     directory: /
     schedule:

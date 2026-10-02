@@ -205,6 +205,15 @@ keeps its `homeUrl` in memory (the confirmed QR link; popup viewers inherit thei
 `isPopupAllowed` requires both the current page and the target to be same-site with it. Trade-off:
 while the viewer is on another site (e.g. an SSO provider) its popups are blocked with a notice.
 
+## 029 — Dependabot respects the pins (2026-10-02)
+
+Dependabot's first dev-tooling group (#11) bundled vite 8, plugin-react 6, TypeScript 7 and
+@types/node 26 — every pin from 002 at once — and failed CI. Closing a group PR does not stop it
+from returning. `.github/dependabot.yml` now ignores those majors (with the blocker named next to
+each rule; `@types/node` follows Electron's bundled Node major), and groups take only minor/patch,
+so a lone incompatible major arrives as its own PR instead of blocking everything. Re-check the
+blockers when electron-vite or typescript-eslint publish new majors.
+
 ## Future ideas (out of scope for now)
 
 - Webcam QR scanning.
