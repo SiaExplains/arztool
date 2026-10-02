@@ -152,6 +152,9 @@ export class Viewer {
   private readonly homeUrl: string
   private notice: ViewerNotice | null = null
   private closed = false
+  /** Cached at creation: reading `.id` on a destroyed WebContents can throw. */
+  private toolbarId = -1
+  private contentId = -1
 
   constructor(url: string, partition: string, homeUrl: string) {
     this.partition = partition
@@ -208,8 +211,10 @@ export class Viewer {
     this.layout()
     if (bounds.maximized) this.window.maximize()
 
-    viewersByToolbar.set(this.toolbar.webContents.id, this)
-    viewersByContent.set(this.content.webContents.id, this)
+    this.toolbarId = this.toolbar.webContents.id
+    this.contentId = this.content.webContents.id
+    viewersByToolbar.set(this.toolbarId, this)
+    viewersByContent.set(this.contentId, this)
 
     this.wireWindow()
     this.wireContent()
@@ -258,12 +263,18 @@ export class Viewer {
     })
     win.on('closed', () => {
       this.closed = true
-      viewersByToolbar.delete(this.toolbar.webContents.id)
-      viewersByContent.delete(this.content.webContents.id)
-      // WebContentsView contents are not destroyed with the window.
-      this.toolbar.webContents.close()
-      this.content.webContents.close()
-      void releaseSession(this.partition)
+      viewersByToolbar.delete(this.toolbarId)
+      viewersByContent.delete(this.contentId)
+      try {
+        // WebContentsView contents are not destroyed with the window. Guard each close: one may
+        // already be gone (e.g. during app shutdown).
+        for (const view of [this.toolbar, this.content]) {
+          if (!view.webContents.isDestroyed()) view.webContents.close()
+        }
+      } finally {
+        // Whatever happened above, the portal's session is wiped.
+        void releaseSession(this.partition)
+      }
     })
   }
 
