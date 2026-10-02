@@ -19,7 +19,7 @@ import {
   type ViewerNotice,
   type ViewerState,
 } from '@shared/ipc/channels'
-import { assessUrl, isSameSitePopup, isViewerNavigable } from '@shared/url-safety'
+import { assessUrl, isPopupAllowed, isViewerNavigable } from '@shared/url-safety'
 import { APP_ORIGIN } from '../app-protocol'
 import { t } from '../i18n'
 import { getSettings } from '../settings'
@@ -274,8 +274,14 @@ export class Viewer {
         this.notify({ kind: 'navigation-blocked', scheme: schemeOf(target) })
     })
 
-    contents.setWindowOpenHandler(({ url }) => {
-      if (isSameSitePopup(contents.getURL(), url)) {
+    contents.setWindowOpenHandler(({ url, referrer }) => {
+      const allowed = isPopupAllowed({
+        topUrl: contents.getURL(),
+        targetUrl: url,
+        referrerUrl: referrer.url,
+        frameOrigins: contents.mainFrame.framesInSubtree.map((frame) => frame.origin),
+      })
+      if (allowed) {
         openViewerWindow(url, this.partition)
       } else {
         this.notify({ kind: 'popup-blocked', host: hostOf(url) })

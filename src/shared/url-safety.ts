@@ -146,6 +146,40 @@ export function isSameSitePopup(openerUrl: string, targetUrl: string): boolean {
   )
 }
 
+export interface PopupRequest {
+  /** URL of the portal page (the viewer's top frame). */
+  topUrl: string
+  /** URL the popup wants to open. */
+  targetUrl: string
+  /**
+   * Referrer Chromium computed from the frame that called window.open — the
+   * caller's URL or origin, or '' when its referrer policy is no-referrer.
+   */
+  referrerUrl: string
+  /** Origins of every frame on the page (WebFrameMain.origin; "null" if opaque). */
+  frameOrigins: readonly string[]
+}
+
+/**
+ * The popup must be same-site with the portal page *and* come from a same-site
+ * frame — a third-party iframe on the portal (ad, widget, tracker) must not
+ * open windows that share the portal's logged-in session.
+ *
+ * The caller is identified by its referrer. When that is empty (no-referrer
+ * policy — which an attacking iframe can set on itself), the caller is unknown,
+ * so the popup is allowed only if *no* frame on the page is from another site.
+ */
+export function isPopupAllowed(request: PopupRequest): boolean {
+  const { topUrl, targetUrl, referrerUrl, frameOrigins } = request
+  if (!isSameSitePopup(topUrl, targetUrl)) return false
+
+  if (referrerUrl !== '') return isSameSitePopup(referrerUrl, targetUrl)
+
+  return frameOrigins.every(
+    (origin) => origin !== 'null' && origin !== '' && isSameSitePopup(origin, targetUrl),
+  )
+}
+
 /** Split an href so the UI can emphasise the registrable domain. */
 export interface HrefParts {
   before: string

@@ -185,11 +185,20 @@ Checked during M5: Electron writes neither the macOS quarantine attribute nor th
 the Web on downloads. Portals may serve ZIPs or executables, so main adds both after a completed
 download — without the source URL, which carries access tokens.
 
+## 027 — Popups: check the calling frame, not just the page (2026-10-02)
+
+Follow-up from the M3 security review. `setWindowOpenHandler` gets no reference to the calling
+frame, but its `referrer` is computed from that frame (measured: the top page yields the portal
+URL, a cross-site iframe its own origin). Rule (`isPopupAllowed`): target same-site with the
+portal page **and** referrer same-site with the target. An empty referrer (no-referrer policy) is
+ambiguous — an attacking iframe can set it on itself — so it is allowed only if every frame's
+`WebFrameMain.origin` is same-site; opaque (`"null"`) origins count as foreign. Trade-off: a
+no-referrer portal that also embeds a third-party iframe loses its popups (notice shown).
+
 ## Future ideas (out of scope for now)
 
 - Webcam QR scanning.
 - Built-in DICOM viewer for downloaded studies.
 - Web or mobile versions.
 - Any cloud backend or user accounts.
-- Popup routing: check the opening _frame_ rather than the top page (M3 security note).
 - Switch the update check on by default once releases are signed (DECISIONS 025).

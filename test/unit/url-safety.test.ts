@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   assessUrl,
+  isPopupAllowed,
   isSameSitePopup,
   isTrusted,
   isViewerNavigable,
@@ -187,5 +188,104 @@ describe('splitHrefForDisplay', () => {
 
   it('returns null for blocked input', () => {
     expect(splitHrefForDisplay(assessUrl('javascript:alert(1)'))).toBeNull()
+  })
+})
+
+describe('isPopupAllowed (opener frame)', () => {
+  const portal = 'https://portal.radiologie-example.de/befund'
+  const target = 'https://viewer.radiologie-example.de/study/1'
+  const portalOrigin = 'https://portal.radiologie-example.de'
+  const ad = 'https://ads.example.com'
+
+  it('allows the portal page itself (referrer = portal URL)', () => {
+    expect(
+      isPopupAllowed({
+        topUrl: portal,
+        targetUrl: target,
+        referrerUrl: portal,
+        frameOrigins: [portalOrigin, ad],
+      }),
+    ).toBe(true)
+  })
+
+  it('allows a same-site subframe (referrer = its origin)', () => {
+    expect(
+      isPopupAllowed({
+        topUrl: portal,
+        targetUrl: target,
+        referrerUrl: 'https://viewer.radiologie-example.de/',
+        frameOrigins: [portalOrigin],
+      }),
+    ).toBe(true)
+  })
+
+  it('denies a third-party iframe opening a same-site-as-portal window', () => {
+    expect(
+      isPopupAllowed({
+        topUrl: portal,
+        targetUrl: target,
+        referrerUrl: `${ad}/`,
+        frameOrigins: [portalOrigin, ad],
+      }),
+    ).toBe(false)
+  })
+
+  it('denies when the caller hid its referrer and a foreign frame is present (ambiguous)', () => {
+    expect(
+      isPopupAllowed({
+        topUrl: portal,
+        targetUrl: target,
+        referrerUrl: '',
+        frameOrigins: [portalOrigin, ad],
+      }),
+    ).toBe(false)
+  })
+
+  it('allows no-referrer portals when every frame is same-site', () => {
+    expect(
+      isPopupAllowed({
+        topUrl: portal,
+        targetUrl: target,
+        referrerUrl: '',
+        frameOrigins: [portalOrigin, 'https://viewer.radiologie-example.de'],
+      }),
+    ).toBe(true)
+  })
+
+  it.each([
+    ['opaque (sandboxed) frame', 'null'],
+    ['empty origin', ''],
+    ['http same-host frame', 'http://portal.radiologie-example.de'],
+  ])('treats an %s as foreign when the referrer is empty', (_label, origin) => {
+    expect(
+      isPopupAllowed({
+        topUrl: portal,
+        targetUrl: target,
+        referrerUrl: '',
+        frameOrigins: [portalOrigin, origin],
+      }),
+    ).toBe(false)
+  })
+
+  it('still requires the target to be same-site with the portal page', () => {
+    expect(
+      isPopupAllowed({
+        topUrl: portal,
+        targetUrl: 'https://evil.com/',
+        referrerUrl: portal,
+        frameOrigins: [portalOrigin],
+      }),
+    ).toBe(false)
+  })
+
+  it('denies an https referrer from a different site even if the target matches the top page', () => {
+    expect(
+      isPopupAllowed({
+        topUrl: portal,
+        targetUrl: target,
+        referrerUrl: 'https://klinik.github.io/',
+        frameOrigins: [portalOrigin],
+      }),
+    ).toBe(false)
   })
 })
