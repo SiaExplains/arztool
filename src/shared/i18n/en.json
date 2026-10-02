@@ -4,12 +4,17 @@
     "tagline": "The digital toolkit for doctors"
   },
   "nav": {
-    "tools": "Tools"
+    "tools": "Tools",
+    "settings": "Settings",
+    "about": "About Arztool"
   },
   "menu": {
     "file": "File",
     "fileMac": "File",
-    "openImage": "Open Image …"
+    "openImage": "Open Image …",
+    "about": "About Arztool",
+    "settings": "Settings …",
+    "help": "Help"
   },
   "dialog": {
     "openImage": {
@@ -90,7 +95,10 @@
           "no-public-domain": "The address does not belong to a public domain, e.g. an internal network.",
           "blocked-scheme": "Links of type “{{scheme}}:” can start programs or scripts and are never opened.",
           "invalid-url": "The content is not a valid web address."
-        }
+        },
+        "trust": "Trust domain",
+        "trusted": "Trusted domain",
+        "autoOpened": "Opened in the viewer automatically – {{domain}} is on your list of trusted domains."
       }
     }
   },
@@ -123,5 +131,43 @@
       "downloadFailed": "“{{filename}}” could not be saved",
       "crashed": "The page crashed – please reload"
     }
+  },
+  "settings": {
+    "title": "Settings",
+    "saved": "Saved",
+    "language": {
+      "heading": "Language",
+      "de": "Deutsch",
+      "en": "English"
+    },
+    "trusted": {
+      "heading": "Trusted domains",
+      "intro": "Domains of the result portals you know. Inputs like “www.portal.de” or a full address are reduced to the domain.",
+      "placeholder": "e.g. patient-cloud.de",
+      "add": "Add",
+      "remove": "Remove {{domain}}",
+      "empty": "No domains yet.",
+      "invalid": "“{{input}}” is not a public domain (no IP address, no internal network).",
+      "duplicate": "{{domain}} is already on the list.",
+      "skip": "Open links to these domains without asking",
+      "skipHint": "Only for encrypted (https) links without any warning. HTTP links and warnings always ask."
+    },
+    "history": {
+      "heading": "History",
+      "toggle": "Remember opened domains",
+      "hint": "Only the domain and time are stored – never the full address, as it may contain access codes. Turning this off deletes the history.",
+      "empty": "The history is empty.",
+      "off": "History is turned off.",
+      "clear": "Clear history",
+      "domain": "Domain",
+      "openedAt": "Opened"
+    }
+  },
+  "about": {
+    "title": "About Arztool",
+    "version": "Version {{version}}",
+    "privacy": "No telemetry, no accounts, no cloud. QR codes are read on this computer only. The only network access is the link you open and – once enabled – the update check.",
+    "components": "Electron {{electron}} · Chromium {{chrome}}",
+    "close": "Close"
   }
 }

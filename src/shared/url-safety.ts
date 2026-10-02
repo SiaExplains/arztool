@@ -173,3 +173,28 @@ export function splitHrefForDisplay(assessment: UrlAssessment): HrefParts | null
     after: href.slice(hostEnd),
   }
 }
+
+/**
+ * Turn what a user types into the trusted-domains list ("www.portal.de",
+ * "https://portal.de/login", "PORTAL.DE") into its registrable domain.
+ * Returns null for anything that cannot be a public site: IPs, bare public
+ * suffixes ("co.uk"), single labels and internal names ("pacs.klinikum.local").
+ */
+export function normalizeTrustedDomain(input: string): string | null {
+  const trimmed = input.trim().toLowerCase()
+  if (trimmed === '' || trimmed.length > 2048) return null
+  let hostname: string
+  try {
+    const withScheme = /^[a-z][a-z0-9+.-]*:\/\//.test(trimmed) ? trimmed : `https://${trimmed}`
+    const url = new URL(withScheme)
+    // "mailto:a@b.de" or "trusted.de@evil.com" parse as credentials — never guess what was meant.
+    if (url.username || url.password) return null
+    hostname = url.hostname
+  } catch {
+    return null
+  }
+  if (hostname === '') return null
+  const info = parse(hostname, TLD_OPTIONS)
+  if (info.isIp || !info.domain || !(info.isIcann === true || info.isPrivate === true)) return null
+  return info.domain
+}

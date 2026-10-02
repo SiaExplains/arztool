@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { MAX_INPUT_BYTES } from '../qr/input-format'
+import { SettingsPatchSchema } from '../settings'
 import { IpcChannel, VIEWER_COMMANDS, type IpcContract } from './channels'
 
 /** Longest URL accepted for the viewer (a QR code holds < 8 KB). */
@@ -28,4 +29,8 @@ export const IpcRequestSchemas = {
   [IpcChannel.ViewerOpen]: z.strictObject({ url: z.string().min(1).max(MAX_URL_LENGTH) }),
   [IpcChannel.ViewerGetState]: z.undefined(),
   [IpcChannel.ViewerCommand]: z.strictObject({ command: z.enum(VIEWER_COMMANDS) }),
+  [IpcChannel.SettingsGet]: z.undefined(),
+  [IpcChannel.SettingsUpdate]: SettingsPatchSchema,
+  [IpcChannel.HistoryList]: z.undefined(),
+  [IpcChannel.HistoryClear]: z.undefined(),
 } as const satisfies { [C in keyof IpcContract]: z.ZodType<IpcContract[C]['request']> }

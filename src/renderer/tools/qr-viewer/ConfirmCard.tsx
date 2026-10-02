@@ -1,7 +1,8 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { ParseKeys } from 'i18next'
-import { assessUrl, splitHrefForDisplay, type SafetyReason } from '@shared/url-safety'
+import { assessUrl, isTrusted, splitHrefForDisplay, type SafetyReason } from '@shared/url-safety'
+import { useSettings } from '../../shell/settings-context'
 import type { SourceInfo } from './decode/pipeline'
 import { buttonPrimary, buttonSecondary, buttonWarning, Card, SourceLine } from './ui'
 
@@ -15,7 +16,7 @@ const REASON_KEYS: Record<SafetyReason, ParseKeys> = {
   'invalid-url': 'tools.qrViewer.confirm.reasons.invalid-url',
 }
 
-type OpenState = 'idle' | 'opened' | 'blocked'
+type OpenState = 'idle' | 'opened' | 'auto-opened' | 'blocked'
 
 export function ConfirmCard({
   url,
@@ -27,11 +28,13 @@ export function ConfirmCard({
   onCancel: () => void
 }) {
   const { t } = useTranslation()
+  const { settings, update } = useSettings()
   const assessment = useMemo(() => assessUrl(url), [url])
   const parts = useMemo(() => splitHrefForDisplay(assessment), [assessment])
   const [openState, setOpenState] = useState<OpenState>('idle')
   const [copied, setCopied] = useState(false)
-  const { verdict } = assessment
+  const { verdict, registrableDomain } = assessment
+  const trusted = isTrusted(assessment, settings.trustedDomains)
 
   const title =
     verdict === 'ok'
@@ -63,11 +66,25 @@ export function ConfirmCard({
         ? 'border-amber-400 dark:border-amber-700'
         : 'border-red-400 dark:border-red-800'
 
-  const open = () => {
+  const open = (auto: boolean) => {
     void window.arztool.viewer.open(url).then((result) => {
-      setOpenState(result.status === 'opened' ? 'opened' : 'blocked')
+      setOpenState(result.status === 'opened' ? (auto ? 'auto-opened' : 'opened') : 'blocked')
     })
   }
+
+  // Opt-in shortcut: a clean https link on a trusted domain opens straight away.
+  // Decided once, when the card appears: trusting a domain from this card must
+  // not open the link on screen behind the user's back — it applies next time.
+  // The ref keeps React StrictMode's double effect from opening two viewers.
+  const autoOpenedFor = useRef<string | null>(null)
+  const [shouldAutoOpen] = useState(() => settings.skipConfirmForTrusted && trusted)
+  useEffect(() => {
+    if (!shouldAutoOpen || autoOpenedFor.current === url) return
+    autoOpenedFor.current = url
+    void window.arztool.viewer.open(url).then((result) => {
+      setOpenState(result.status === 'opened' ? 'auto-opened' : 'blocked')
+    })
+  }, [shouldAutoOpen, url])
 
   return (
     <Card testId="qr-confirm" className={border}>
@@ -88,7 +105,7 @@ export function ConfirmCard({
         </p>
       ) : null}
 
-      {assessment.registrableDomain && verdict !== 'block' ? (
+      {registrableDomain && verdict !== 'block' ? (
         <div className="mt-5">
           <p className="text-xs font-medium tracking-wide text-slate-500 uppercase">
             {t('tools.qrViewer.confirm.domainLabel')}
@@ -97,8 +114,16 @@ export function ConfirmCard({
             data-testid="registrable-domain"
             className="mt-1 font-mono text-2xl font-semibold break-all"
           >
-            {assessment.registrableDomain}
+            {registrableDomain}
           </p>
+          {trusted ? (
+            <p
+              data-testid="trusted-badge"
+              className="mt-1 text-xs font-medium text-teal-700 dark:text-teal-300"
+            >
+              ✓ {t('tools.qrViewer.confirm.trusted')}
+            </p>
+          ) : null}
         </div>
       ) : null}
 
@@ -139,6 +164,11 @@ export function ConfirmCard({
         </ul>
       ) : null}
 
+      {openState === 'auto-opened' ? (
+        <p role="status" className="mt-5 text-sm text-emerald-700 dark:text-emerald-300">
+          {t('tools.qrViewer.confirm.autoOpened', { domain: registrableDomain ?? '' })}
+        </p>
+      ) : null}
       {openState === 'opened' ? (
         <p role="status" className="mt-5 text-sm text-emerald-700 dark:text-emerald-300">
           {t('tools.qrViewer.confirm.opened')}
@@ -154,13 +184,36 @@ export function ConfirmCard({
 
       <div className="mt-6 flex flex-wrap gap-3">
         {verdict === 'ok' ? (
-          <button type="button" className={buttonPrimary} onClick={open}>
+          <button
+            type="button"
+            className={buttonPrimary}
+            onClick={() => {
+              open(false)
+            }}
+          >
             {t('tools.qrViewer.confirm.open')}
           </button>
         ) : null}
         {verdict === 'warn' ? (
-          <button type="button" className={buttonWarning} onClick={open}>
+          <button
+            type="button"
+            className={buttonWarning}
+            onClick={() => {
+              open(false)
+            }}
+          >
             {t('tools.qrViewer.confirm.openAnyway')}
+          </button>
+        ) : null}
+        {verdict === 'ok' && registrableDomain && !trusted ? (
+          <button
+            type="button"
+            className={buttonSecondary}
+            onClick={() => {
+              void update({ trustedDomains: [...settings.trustedDomains, registrableDomain] })
+            }}
+          >
+            {t('tools.qrViewer.confirm.trust')}
           </button>
         ) : null}
         <button

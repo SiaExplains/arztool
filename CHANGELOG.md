@@ -4,6 +4,29 @@ All notable changes to Arztool are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.4.0] — 2026-10-01
+
+### Added
+
+- Settings page (sidebar, or Cmd/Ctrl+,):
+  - **Language:** German or English. The whole app, the menus and open viewer windows switch
+    immediately, and the choice is remembered.
+  - **Trusted domains:** add the portals you know. Whatever is typed ("www.portal.de", a full
+    address) is reduced to the domain; IP addresses, internal names and look-alike tricks are
+    refused with an explanation. A "Domain vertrauen" button on the safety card adds one in a
+    click.
+  - **Open without asking (opt-in):** clean https links to a trusted domain open directly.
+    http links and anything with a warning still ask, always. Trusting a domain from the safety card
+    applies from the next scan on; it never opens the link already on screen.
+  - **History (off by default):** when switched on, only the domain and time are kept — never
+    the full address, which can contain access codes. Switching it off deletes it.
+- About dialog with the version, from the sidebar and the app menu (macOS) / Help menu
+  (Windows).
+
+### Fixed
+
+- A decoded result is no longer lost when visiting another page of the app and coming back.
+
 ## [0.3.0] — 2026-10-01
 
 ### Added

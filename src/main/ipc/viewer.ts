@@ -1,6 +1,7 @@
 import type { IpcMainInvokeEvent } from 'electron'
 import { IpcChannel } from '@shared/ipc/channels'
 import { assessUrl } from '@shared/url-safety'
+import { recordHistory } from '../settings'
 import { getShellWindow } from '../windows/shell'
 import { openViewerWindow, viewerForToolbar, type Viewer } from '../windows/viewer'
 import { handle } from './handle'
@@ -21,6 +22,7 @@ export function registerViewerIpc(): void {
     const assessment = assessUrl(url)
     if (assessment.verdict === 'block' || assessment.href === null) return { status: 'blocked' }
     openViewerWindow(assessment.href)
+    if (assessment.registrableDomain) void recordHistory(assessment.registrableDomain)
     return { status: 'opened' }
   })
 

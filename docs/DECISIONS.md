@@ -129,6 +129,25 @@ Clicking `mailto:` in Chromium surfaces as `will-navigate` _and_ as an `openExte
 permission request. Both are denied; the toolbar says which scheme was blocked. Playwright's
 `click()` waits for the cancelled navigation, so E2E clicks such links from inside the page.
 
+## 020 — Settings: pure rules in shared, persistence in main (2026-10-01)
+
+Schema, defaults, patch rules, trusted-domain normalisation and history capping live in
+`shared/settings.ts` (unit-tested). Main persists with `json-store.ts` (atomic, serialised
+writes). The preload must stay dependency-free, so `ipc/channels.ts` mirrors the types by hand;
+`test/unit/ipc-types.test.ts` fails typechecking if they drift.
+
+## 021 — Toggles update optimistically (2026-10-01)
+
+Waiting for the IPC round trip made checkboxes lag a frame behind the click. Language and
+toggles update immediately and roll back if saving fails; trusted domains wait for main because
+main normalises them.
+
+## 022 — Tools stay mounted behind Settings (2026-10-01)
+
+The selected tool and the visible page are separate state, so a result survives a visit to
+Settings. Because the QR tool listens window-wide, any drop, paste or File → Open switches the
+view back to it — nothing is decoded out of sight.
+
 ## Future ideas (out of scope for now)
 
 - Webcam QR scanning.

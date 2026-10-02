@@ -7,5 +7,7 @@ export function registerAppIpc(): void {
     name: app.getName(),
     version: app.getVersion(),
     platform: process.platform as Platform,
+    electronVersion: process.versions.electron,
+    chromeVersion: process.versions.chrome,
   }))
 }
