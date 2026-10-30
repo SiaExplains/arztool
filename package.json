@@ -30,7 +30,7 @@
     "fixtures": "node scripts/gen-fixtures.mts"
   },
   "dependencies": {
-    "electron-updater": "^6.8.9",
+    "electron-updater": "^6.8.11",
     "tldts": "^7.4.16",
     "zod": "^4.6.5"
   },
@@ -44,7 +44,7 @@
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^5.2.0",
     "electron": "^44.5.1",
-    "electron-builder": "^26.15.3",
+    "electron-builder": "^26.18.0",
     "electron-vite": "^5.0.0",
     "eslint": "^10.11.0",
     "eslint-config-prettier": "^10.1.8",
